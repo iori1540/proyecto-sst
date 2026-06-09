@@ -26,14 +26,14 @@ const usuarioSchema = new mongoose.Schema({
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 const incidenteSchema = new mongoose.Schema({
-  titulo:      { type: String, required: true },
-  tipo:        { type: String, required: true }, // accidente | casi-accidente | condicion-insegura | otro
-  area:        { type: String, required: true },
-  descripcion: { type: String, required: true },
-  severidad:   { type: String, required: true }, // baja | media | alta | critica
-  usuarioId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
+  titulo:        { type: String, required: true },
+  tipo:          { type: String, required: true },
+  area:          { type: String, required: true },
+  descripcion:   { type: String, required: true },
+  severidad:     { type: String, required: true },
+  usuarioId:     { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
   usuarioNombre: { type: String },
-  fecha:       { type: Date, default: Date.now }
+  fecha:         { type: Date, default: Date.now }
 });
 const Incidente = mongoose.model('Incidente', incidenteSchema);
 
@@ -45,7 +45,7 @@ app.post('/api/registro', async (req, res) => {
       return res.status(400).json({ ok: false, mensaje: 'Completa todos los campos.' });
     const existe = await Usuario.findOne({ correo });
     if (existe)
-      return res.status(409).json({ ok: false, mensaje: 'El correo ya está registrado.' });
+      return res.status(409).json({ ok: false, mensaje: 'El correo ya esta registrado.' });
     const hash = await bcrypt.hash(contrasena, 10);
     await Usuario.create({ nombre, correo, contrasena: hash });
     res.status(201).json({ ok: true, mensaje: 'Usuario registrado correctamente.' });
@@ -61,11 +61,11 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ ok: false, mensaje: 'Completa todos los campos.' });
     const usuario = await Usuario.findOne({ correo });
     if (!usuario)
-      return res.status(401).json({ ok: false, mensaje: 'Correo o contraseña incorrectos.' });
+      return res.status(401).json({ ok: false, mensaje: 'Correo o contrasena incorrectos.' });
     const valido = await bcrypt.compare(contrasena, usuario.contrasena);
     if (!valido)
-      return res.status(401).json({ ok: false, mensaje: 'Correo o contraseña incorrectos.' });
-    res.json({ ok: true, mensaje: `Bienvenido, ${usuario.nombre}!`, nombre: usuario.nombre, id: usuario._id, rol: usuario.rol });
+      return res.status(401).json({ ok: false, mensaje: 'Correo o contrasena incorrectos.' });
+    res.json({ ok: true, mensaje: 'Bienvenido, ' + usuario.nombre + '!', nombre: usuario.nombre, id: usuario._id, rol: usuario.rol });
   } catch (err) {
     res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
   }
@@ -95,20 +95,42 @@ app.get('/api/incidentes', async (req, res) => {
   }
 });
 
+app.delete('/api/incidentes/:id', async (req, res) => {
+  try {
+    await Incidente.findByIdAndDelete(req.params.id);
+    res.json({ ok: true, mensaje: 'Incidente eliminado.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
+  }
+});
+
+// ── ADMIN ─────────────────────────────────────────────────────
+app.get('/api/admin/usuarios', async (req, res) => {
+  try {
+    const usuarios = await Usuario.find({}, '-contrasena').sort({ creado: -1 });
+    res.json({ ok: true, usuarios });
+  } catch (err) {
+    res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
+  }
+});
+
+app.put('/api/admin/usuarios/:id/rol', async (req, res) => {
+  try {
+    const { rol } = req.body;
+    await Usuario.findByIdAndUpdate(req.params.id, { rol });
+    res.json({ ok: true, mensaje: 'Rol actualizado.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
+  }
+});
+
 app.get('/api/estadisticas', async (req, res) => {
   try {
     const total = await Incidente.countDocuments();
-    const porSeveridad = await Incidente.aggregate([
-      { $group: { _id: '$severidad', count: { $sum: 1 } } }
-    ]);
-    const porTipo = await Incidente.aggregate([
-      { $group: { _id: '$tipo', count: { $sum: 1 } } }
-    ]);
-    const porMes = await Incidente.aggregate([
-      { $group: {
-        _id: { mes: { $month: '$fecha' }, anio: { $year: '$fecha' } },
-        count: { $sum: 1 }
-      }},
+    const porSeveridad = await Incidente.aggregate([{ $group: { _id: '$severidad', count: { $sum: 1 } } }]);
+    const porTipo      = await Incidente.aggregate([{ $group: { _id: '$tipo',      count: { $sum: 1 } } }]);
+    const porMes       = await Incidente.aggregate([
+      { $group: { _id: { mes: { $month: '$fecha' }, anio: { $year: '$fecha' } }, count: { $sum: 1 } } },
       { $sort: { '_id.anio': 1, '_id.mes': 1 } },
       { $limit: 6 }
     ]);
@@ -118,4 +140,4 @@ app.get('/api/estadisticas', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`🚀 Servidor SST en http://localhost:${PORT}`));
+app.listen(PORT, () => console.log('Servidor SST en http://localhost:' + PORT));
