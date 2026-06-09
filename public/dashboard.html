@@ -38,7 +38,6 @@
     .seccion { display: none; }
     .seccion.activa { display: block; }
 
-    /* Cards del inicio */
     .cards-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem; margin-bottom: 1.5rem;
@@ -60,7 +59,6 @@
     .bienvenida h2 { font-size: 18px; color: #111; margin-bottom: 0.3rem; }
     .bienvenida p { color: #666; font-size: 14px; }
 
-    /* Formulario incidente */
     .form-card {
       background: white; border-radius: 12px; padding: 2rem;
       border: 1px solid #e0e7ef; margin-bottom: 1rem;
@@ -89,7 +87,6 @@
     .msg.ok    { background: #e6f4ea; color: #2e7d32; display: block; }
     .msg.error { background: #fdecea; color: #c62828; display: block; }
 
-    /* Tabla reportes */
     .tabla-wrap { background: white; border-radius: 12px; border: 1px solid #e0e7ef; overflow: hidden; }
     .tabla-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e0e7ef; display: flex; justify-content: space-between; align-items: center; }
     .tabla-header h3 { font-size: 16px; color: #111; }
@@ -99,17 +96,14 @@
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #f8fafc; }
 
-    .badge {
-      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
-    }
-    .badge-baja     { background: #e6f4ea; color: #2e7d32; }
-    .badge-media    { background: #fff8e1; color: #f57f17; }
-    .badge-alta     { background: #fff3e0; color: #e65100; }
-    .badge-critica  { background: #fdecea; color: #c62828; }
+    .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-baja    { background: #e6f4ea; color: #2e7d32; }
+    .badge-media   { background: #fff8e1; color: #f57f17; }
+    .badge-alta    { background: #fff3e0; color: #e65100; }
+    .badge-critica { background: #fdecea; color: #c62828; }
 
     .sin-datos { text-align: center; padding: 3rem; color: #888; font-size: 14px; }
 
-    /* Estadísticas */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .stat-card { background: white; border-radius: 12px; padding: 1.2rem; text-align: center; border: 1px solid #e0e7ef; }
     .stat-num { font-size: 32px; font-weight: 700; color: #3a8fe8; }
@@ -128,6 +122,55 @@
     .bar-fill.media   { background: #fdd835; }
     .bar-fill.baja    { background: #43a047; }
 
+    /* ── MODAL VIDEO ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.abierto { display: flex; }
+    .modal-box {
+      background: white; border-radius: 16px;
+      padding: 1.5rem; width: 90%; max-width: 700px;
+      position: relative;
+    }
+    .modal-top {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 1rem;
+    }
+    .modal-top h3 { font-size: 16px; color: #111; }
+    .btn-cerrar {
+      background: #f0f4f8; border: none; border-radius: 8px;
+      padding: 6px 14px; cursor: pointer; font-size: 14px; font-weight: 600;
+    }
+    .video-wrap {
+      position: relative; padding-bottom: 56.25%;
+      height: 0; overflow: hidden; border-radius: 10px;
+    }
+    .video-wrap iframe {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; border: none; border-radius: 10px;
+    }
+
+    /* Cards capacitacion */
+    .cap-card {
+      background: white; border-radius: 12px; padding: 1.5rem;
+      text-align: center; border: 1px solid #e0e7ef;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cap-card.clickable { cursor: pointer; }
+    .cap-card.clickable:hover { transform: translateY(-3px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .cap-card .icono { font-size: 36px; margin-bottom: 0.8rem; }
+    .cap-card h3 { font-size: 15px; color: #333; margin-bottom: 0.3rem; font-weight: 600; }
+    .cap-card p { font-size: 12px; color: #888; margin-bottom: 0.5rem; }
+    .cap-estado { font-size: 12px; font-weight: 600; margin-top: 8px; }
+    .cap-estado.disponible { color: #3a8fe8; }
+    .cap-estado.proximo    { color: #f57f17; }
+
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
       .charts-grid { grid-template-columns: 1fr; }
@@ -135,6 +178,19 @@
   </style>
 </head>
 <body>
+
+<!-- ── MODAL VIDEO ── -->
+<div class="modal-overlay" id="modal-video">
+  <div class="modal-box">
+    <div class="modal-top">
+      <h3 id="modal-titulo">Video</h3>
+      <button class="btn-cerrar" onclick="cerrarVideo()">✕ Cerrar</button>
+    </div>
+    <div class="video-wrap">
+      <iframe id="modal-iframe" src="" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
 
 <header>
   <h1>🦺 Sistema SST — I.D.E. Refinería</h1>
@@ -184,7 +240,7 @@
     </div>
   </div>
 
-  <!-- REPORTAR INCIDENTE -->
+  <!-- REPORTAR -->
   <div class="seccion" id="sec-reportar">
     <div class="form-card">
       <h3>⚠️ Reportar Nuevo Incidente</h3>
@@ -243,62 +299,63 @@
   <!-- CAPACITACIONES -->
   <div class="seccion" id="sec-capacitaciones">
     <div class="cards-grid">
-      <div class="card">
+
+      <div class="cap-card clickable" onclick="verVideo('Prevención de Incendios', 'vaABzaTQprc')">
         <div class="icono">🔥</div>
         <h3>Prevención de Incendios</h3>
         <p>Uso de extintores y evacuación de emergencia</p>
-        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+        <div class="cap-estado disponible">▶️ Ver video</div>
       </div>
-      <div class="card">
+
+      <div class="cap-card clickable" onclick="verVideo('Seguridad Eléctrica Industrial', 'CGGQDet0oFY')">
         <div class="icono">⚡</div>
         <h3>Seguridad Eléctrica</h3>
         <p>Riesgos eléctricos en planta industrial</p>
-        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+        <div class="cap-estado disponible">▶️ Ver video</div>
       </div>
-      <div class="card">
+
+      <div class="cap-card">
         <div class="icono">🧪</div>
         <h3>Manejo de Químicos</h3>
         <p>Uso seguro de sustancias peligrosas</p>
-        <p style="margin-top:8px; color:#f57f17; font-size:12px; font-weight:600;">🕐 Próximamente</p>
+        <div class="cap-estado proximo">🕐 Próximamente</div>
       </div>
-      <div class="card">
+
+      <div class="cap-card clickable" onclick="verVideo('EPP - Equipo de Protección Personal', '4ymvWwkMDy0')">
         <div class="icono">🦺</div>
         <h3>EPP Correcto</h3>
         <p>Equipo de protección personal obligatorio</p>
-        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+        <div class="cap-estado disponible">▶️ Ver video</div>
       </div>
-      <div class="card">
+
+      <div class="cap-card">
         <div class="icono">🏭</div>
         <h3>SCADA y Automatización</h3>
         <p>Seguridad en sistemas de control industrial</p>
-        <p style="margin-top:8px; color:#f57f17; font-size:12px; font-weight:600;">🕐 Próximamente</p>
+        <div class="cap-estado proximo">🕐 Próximamente</div>
       </div>
-      <div class="card">
+
+      <div class="cap-card clickable" onclick="verVideo('Primeros Auxilios en el Trabajo', '7CwcT4kYzPs')">
         <div class="icono">🚑</div>
         <h3>Primeros Auxilios</h3>
         <p>Respuesta ante emergencias médicas</p>
-        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+        <div class="cap-estado disponible">▶️ Ver video</div>
       </div>
+
     </div>
   </div>
 
-  <!-- ESTADÍSTICAS -->
+  <!-- ESTADISTICAS -->
   <div class="seccion" id="sec-estadisticas">
-    <div class="stats-grid" id="stats-totales">
+    <div class="stats-grid">
       <div class="stat-card"><div class="stat-num" id="stat-total">-</div><div class="stat-label">Total Incidentes</div></div>
       <div class="stat-card"><div class="stat-num" style="color:#e53935" id="stat-criticos">-</div><div class="stat-label">Críticos</div></div>
       <div class="stat-card"><div class="stat-num" style="color:#fb8c00" id="stat-altos">-</div><div class="stat-label">Alta Severidad</div></div>
       <div class="stat-card"><div class="stat-num" style="color:#43a047" id="stat-bajos">-</div><div class="stat-label">Baja Severidad</div></div>
     </div>
     <div class="charts-grid">
-      <div class="chart-card">
-        <h4>Por Severidad</h4>
-        <div id="chart-severidad"></div>
-      </div>
-      <div class="chart-card">
-        <h4>Por Tipo</h4>
-        <div id="chart-tipo"></div>
-      </div>
+      <div class="chart-card"><h4>Por Severidad</h4><div id="chart-severidad"></div></div>
+      <div class="chart-card"><h4>Por Tipo</h4><div id="chart-tipo"></div></div>
     </div>
   </div>
 
@@ -308,7 +365,7 @@
   // ── Estado ────────────────────────────────────────────────
   const usuario = JSON.parse(localStorage.getItem('sst_usuario') || 'null');
   if (!usuario) window.location.href = '/';
-  document.getElementById('nombre-usuario').textContent = '👷 ' + (usuario?.nombre || '');
+  document.getElementById('nombre-usuario').textContent = '👷 ' + (usuario ? usuario.nombre : '');
 
   function salir() {
     localStorage.removeItem('sst_usuario');
@@ -326,6 +383,23 @@
     if (tab === 'estadisticas') cargarEstadisticas();
   }
 
+  // ── VIDEO MODAL ───────────────────────────────────────────
+  function verVideo(titulo, videoId) {
+    document.getElementById('modal-titulo').textContent = titulo;
+    document.getElementById('modal-iframe').src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+    document.getElementById('modal-video').classList.add('abierto');
+  }
+
+  function cerrarVideo() {
+    document.getElementById('modal-video').classList.remove('abierto');
+    document.getElementById('modal-iframe').src = '';
+  }
+
+  // Cerrar modal al hacer clic fuera
+  document.getElementById('modal-video').addEventListener('click', function(e) {
+    if (e.target === this) cerrarVideo();
+  });
+
   // ── Reportar Incidente ────────────────────────────────────
   async function reportarIncidente() {
     const titulo      = document.getElementById('inc-titulo').value.trim();
@@ -334,9 +408,8 @@
     const area        = document.getElementById('inc-area').value.trim();
     const descripcion = document.getElementById('inc-descripcion').value.trim();
     const btn = document.getElementById('btn-reportar');
-    const msg = document.getElementById('msg-reportar');
 
-    msg.className = 'msg';
+    document.getElementById('msg-reportar').className = 'msg';
     if (!titulo || !tipo || !severidad || !area || !descripcion)
       return mostrarMsg('msg-reportar', 'Completa todos los campos.', 'error');
 
@@ -373,78 +446,40 @@
       const res = await fetch('/api/incidentes?usuarioId=' + usuario.id);
       const data = await res.json();
       if (!data.incidentes.length) {
-        contenido.innerHTML = '<div class="sin-datos">No tienes reportes aún. ¡Registra tu primer incidente!</div>';
+        contenido.innerHTML = '<div class="sin-datos">No tienes reportes aun.</div>';
         return;
       }
       const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      contenido.innerHTML = `
-        <table>
-          <thead><tr>
-            <th>Título</th><th>Tipo</th><th>Área</th><th>Severidad</th><th>Fecha</th>
-          </tr></thead>
-          <tbody>
-            ${data.incidentes.map(i => {
-              const f = new Date(i.fecha);
-              return `<tr>
-                <td><strong>${i.titulo}</strong><br><span style="color:#888;font-size:11px">${i.descripcion.substring(0,60)}...</span></td>
-                <td>${i.tipo}</td>
-                <td>${i.area}</td>
-                <td><span class="badge badge-${i.severidad}">${i.severidad}</span></td>
-                <td>${f.getDate()} ${meses[f.getMonth()]} ${f.getFullYear()}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>`;
+      contenido.innerHTML = '<table><thead><tr><th>Titulo</th><th>Tipo</th><th>Area</th><th>Severidad</th><th>Fecha</th></tr></thead><tbody>' +
+        data.incidentes.map(i => {
+          const f = new Date(i.fecha);
+          return '<tr><td><strong>' + i.titulo + '</strong></td><td>' + i.tipo + '</td><td>' + i.area + '</td><td><span class="badge badge-' + i.severidad + '">' + i.severidad + '</span></td><td>' + f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear() + '</td></tr>';
+        }).join('') + '</tbody></table>';
     } catch {
       contenido.innerHTML = '<div class="sin-datos">Error al cargar reportes.</div>';
     }
   }
 
-  // ── Estadísticas ──────────────────────────────────────────
+  // ── Estadisticas ──────────────────────────────────────────
   async function cargarEstadisticas() {
     try {
       const res = await fetch('/api/estadisticas');
       const data = await res.json();
-
       document.getElementById('stat-total').textContent = data.total;
-
       const sev = data.porSeveridad;
       const getCnt = (arr, val) => (arr.find(x => x._id === val) || {}).count || 0;
       document.getElementById('stat-criticos').textContent = getCnt(sev, 'critica');
       document.getElementById('stat-altos').textContent    = getCnt(sev, 'alta');
       document.getElementById('stat-bajos').textContent    = getCnt(sev, 'baja');
-
-      // Chart severidad
       const maxSev = Math.max(...sev.map(x => x.count), 1);
-      document.getElementById('chart-severidad').innerHTML = sev.map(s => `
-        <div class="bar-item">
-          <div class="bar-label"><span>${s._id}</span><span>${s.count}</span></div>
-          <div class="bar-track"><div class="bar-fill ${s._id}" style="width:${Math.round(s.count/maxSev*100)}%"></div></div>
-        </div>`).join('') || '<div style="color:#888;font-size:13px">Sin datos aún</div>';
-
-      // Chart tipo
+      document.getElementById('chart-severidad').innerHTML = sev.map(s =>
+        '<div class="bar-item"><div class="bar-label"><span>' + s._id + '</span><span>' + s.count + '</span></div><div class="bar-track"><div class="bar-fill ' + s._id + '" style="width:' + Math.round(s.count/maxSev*100) + '%"></div></div></div>'
+      ).join('') || '<div style="color:#888;font-size:13px">Sin datos aun</div>';
       const maxTipo = Math.max(...data.porTipo.map(x => x.count), 1);
-      document.getElementById('chart-tipo').innerHTML = data.porTipo.map(t => `
-        <div class="bar-item">
-          <div class="bar-label"><span>${t._id}</span><span>${t.count}</span></div>
-          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(t.count/maxTipo*100)}%"></div></div>
-        </div>`).join('') || '<div style="color:#888;font-size:13px">Sin datos aún</div>';
-
-    } catch {
-      console.error('Error cargando estadísticas');
-    }
-  }
-
-  function verVideo(titulo, videoId) {
-    document.getElementById('modal-titulo').textContent = titulo;
-    document.getElementById('modal-iframe').src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
-    const modal = document.getElementById('modal-video');
-    modal.style.display = 'flex';
-  }
-
-  function cerrarVideo() {
-    document.getElementById('modal-video').style.display = 'none';
-    document.getElementById('modal-iframe').src = '';
+      document.getElementById('chart-tipo').innerHTML = data.porTipo.map(t =>
+        '<div class="bar-item"><div class="bar-label"><span>' + t._id + '</span><span>' + t.count + '</span></div><div class="bar-track"><div class="bar-fill" style="width:' + Math.round(t.count/maxTipo*100) + '%"></div></div></div>'
+      ).join('') || '<div style="color:#888;font-size:13px">Sin datos aun</div>';
+    } catch { console.error('Error estadisticas'); }
   }
 
   function mostrarMsg(id, texto, tipo) {
@@ -455,5 +490,3 @@
 </script>
 </body>
 </html>
-< ! - -   v 2   - - >  
- 
