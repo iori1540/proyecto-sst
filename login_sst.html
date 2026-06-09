@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nuevo Metodo SST para Trabajadores</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background: #dce9f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    h1.titulo-app {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2.5rem 3rem;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 1.8rem;
+    }
+
+    .campo {
+      margin-bottom: 1.2rem;
+    }
+
+    .campo label {
+      display: block;
+      font-size: 15px;
+      font-weight: 500;
+      color: #222;
+      margin-bottom: 6px;
+    }
+
+    .campo input[type="email"],
+    .campo input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ccd6e0;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #333;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .campo input[type="email"]:focus,
+    .campo input[type="password"]:focus {
+      border-color: #3a8fe8;
+    }
+
+    .opciones {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 1rem 0 1.5rem;
+      font-size: 14px;
+    }
+
+    .opciones label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #555;
+      cursor: pointer;
+    }
+
+    .opciones input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+      accent-color: #3a8fe8;
+    }
+
+    .opciones a {
+      color: #3a8fe8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .opciones a:hover {
+      text-decoration: underline;
+    }
+
+    .btn-ingresar {
+      width: 100%;
+      padding: 14px;
+      background: #3a8fe8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-ingresar:hover {
+      background: #2878d0;
+    }
+
+    .btn-ingresar:active {
+      background: #1c5fa8;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="titulo-app">Nuevo Metodo SST para Trabajadores</h1>
+
+  <div class="card">
+    <h2>Ingresar</h2>
+
+    <div class="campo">
+      <label for="correo">Correo</label>
+      <input type="email" id="correo" placeholder="ejemplo@correo.com" />
+    </div>
+
+    <div class="campo">
+      <label for="contrasena">Contraseña</label>
+      <input type="password" id="contrasena" placeholder="••••••••" />
+    </div>
+
+    <div class="opciones">
+      <label>
+        <input type="checkbox" id="recordar" />
+        Permanecer conectado
+      </label>
+      <a href="#">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <button class="btn-ingresar" onclick="ingresar()">Ingresar</button>
+  </div>
+
+  <script>
+    function ingresar() {
+      const correo = document.getElementById('correo').value.trim();
+      const contrasena = document.getElementById('contrasena').value.trim();
+
+      if (!correo || !contrasena) {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
+
+      // Aquí conectas con tu backend o API
+      console.log('Correo:', correo);
+      console.log('Contraseña:', contrasena);
+      alert('Iniciando sesión...');
+    }
+  </script>
+
+</body>
+</html>

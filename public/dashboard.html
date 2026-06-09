@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard SST</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #3a8fe8;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { font-size: 18px; font-weight: 600; }
+
+    .btn-salir {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-salir:hover { background: rgba(255,255,255,0.3); }
+
+    .contenido {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .bienvenida {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid #3a8fe8;
+    }
+
+    .bienvenida h2 { font-size: 20px; color: #111; margin-bottom: 0.5rem; }
+    .bienvenida p  { color: #666; font-size: 14px; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+      border: 1px solid #e0e7ef;
+    }
+
+    .card:hover { transform: translateY(-3px); }
+
+    .card .icono {
+      font-size: 36px;
+      margin-bottom: 0.8rem;
+    }
+
+    .card h3 { font-size: 15px; color: #333; margin-bottom: 0.3rem; }
+    .card p  { font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🦺 Sistema SST — I.D.E. Refinería</h1>
+    <button class="btn-salir" onclick="salir()">Cerrar sesión</button>
+  </header>
+
+  <div class="contenido">
+
+    <div class="bienvenida">
+      <h2>Bienvenido al Sistema SST 👷</h2>
+      <p>Gestiona incidentes, reportes y capacitaciones de seguridad.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="icono">⚠️</div>
+        <h3>Reportar Incidente</h3>
+        <p>Registra un nuevo incidente de seguridad</p>
+      </div>
+      <div class="card">
+        <div class="icono">📋</div>
+        <h3>Mis Reportes</h3>
+        <p>Ver historial de reportes enviados</p>
+      </div>
+      <div class="card">
+        <div class="icono">🎓</div>
+        <h3>Capacitaciones</h3>
+        <p>Cursos y entrenamientos disponibles</p>
+      </div>
+      <div class="card">
+        <div class="icono">📊</div>
+        <h3>Estadísticas</h3>
+        <p>Indicadores de seguridad del mes</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function salir() {
+      window.location.href = '/';
+    }
+  </script>
+
+</body>
+</html>
