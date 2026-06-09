@@ -372,6 +372,13 @@
     window.location.href = '/';
   }
 
+  // Boton admin visible para todos
+  const btnAdmin = document.createElement('button');
+  btnAdmin.textContent = '🛡️ Panel Admin';
+  btnAdmin.style.cssText = 'background:#1a237e; border:none; color:white; padding:7px 14px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;';
+  btnAdmin.onclick = () => window.location.href = '/admin.html';
+  document.querySelector('.header-right').insertBefore(btnAdmin, document.querySelector('.btn-salir'));
+
   // ── Tabs ──────────────────────────────────────────────────
   function irTab(tab) {
     document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
