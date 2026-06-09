@@ -435,6 +435,18 @@
     }
   }
 
+  function verVideo(titulo, videoId) {
+    document.getElementById('modal-titulo').textContent = titulo;
+    document.getElementById('modal-iframe').src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+    const modal = document.getElementById('modal-video');
+    modal.style.display = 'flex';
+  }
+
+  function cerrarVideo() {
+    document.getElementById('modal-video').style.display = 'none';
+    document.getElementById('modal-iframe').src = '';
+  }
+
   function mostrarMsg(id, texto, tipo) {
     const el = document.getElementById(id);
     el.textContent = texto;
