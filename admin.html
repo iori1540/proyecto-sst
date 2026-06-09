@@ -266,7 +266,7 @@
       const f = new Date(i.fecha);
       filas.push([i.titulo, i.tipo, i.area, i.severidad, i.usuarioNombre || 'N/A', f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear()]);
     });
-    const csv = filas.map(r => r.map(c => '"' + c + '"').join(',')).join('\n');
+    const csv = 'sep=;\n' + filas.map(r => r.map(c => '"' + c + '"').join(';')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
