@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nuevo Metodo SST para Trabajadores</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background: #dce9f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2.5rem 3rem;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 1.8rem;
+      border-bottom: 2px solid #e0e7ef;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #888;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .tab.activo { color: #3a8fe8; border-bottom-color: #3a8fe8; }
+
+    .formulario { display: none; }
+    .formulario.activo { display: block; }
+
+    .campo { margin-bottom: 1.1rem; }
+
+    .campo label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .campo input {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid #ccd6e0;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #333;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .campo input:focus { border-color: #3a8fe8; }
+
+    .opciones {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      margin: 0.8rem 0 1.3rem;
+    }
+
+    .opciones label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #555;
+      cursor: pointer;
+    }
+
+    .opciones a { color: #3a8fe8; text-decoration: none; }
+    .opciones a:hover { text-decoration: underline; }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: #3a8fe8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background: #2878d0; }
+    .btn:disabled { background: #9ec5f0; cursor: not-allowed; }
+
+    .msg {
+      margin-top: 1rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .msg.ok    { background: #e6f4ea; color: #2e7d32; display: block; }
+    .msg.error { background: #fdecea; color: #c62828; display: block; }
+  </style>
+</head>
+<body>
+
+  <h1>Nuevo Metodo SST para Trabajadores</h1>
+
+  <div class="card">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab activo" onclick="cambiarTab('login')">Ingresar</div>
+      <div class="tab"       onclick="cambiarTab('registro')">Registrarse</div>
+    </div>
+
+    <!-- Formulario Login -->
+    <div class="formulario activo" id="form-login">
+      <div class="campo">
+        <label>Correo</label>
+        <input type="email" id="login-correo" placeholder="ejemplo@correo.com"/>
+      </div>
+      <div class="campo">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••"/>
+      </div>
+      <div class="opciones">
+        <label><input type="checkbox"/> Permanecer conectado</label>
+        <a href="#">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button class="btn" id="btn-login" onclick="login()">Ingresar</button>
+      <div class="msg" id="msg-login"></div>
+    </div>
+
+    <!-- Formulario Registro -->
+    <div class="formulario" id="form-registro">
+      <div class="campo">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-nombre" placeholder="Tu nombre"/>
+      </div>
+      <div class="campo">
+        <label>Correo</label>
+        <input type="email" id="reg-correo" placeholder="ejemplo@correo.com"/>
+      </div>
+      <div class="campo">
+        <label>Contraseña</label>
+        <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"/>
+      </div>
+      <button class="btn" id="btn-registro" onclick="registro()" style="margin-top:0.5rem">Registrarse</button>
+      <div class="msg" id="msg-registro"></div>
+    </div>
+
+  </div>
+
+  <script>
+    function cambiarTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('activo', (i === 0 && tab === 'login') || (i === 1 && tab === 'registro'));
+      });
+      document.getElementById('form-login').classList.toggle('activo', tab === 'login');
+      document.getElementById('form-registro').classList.toggle('activo', tab === 'registro');
+    }
+
+    function mostrarMsg(id, texto, tipo) {
+      const el = document.getElementById(id);
+      el.textContent = texto;
+      el.className = `msg ${tipo}`;
+    }
+
+    async function login() {
+      const correo    = document.getElementById('login-correo').value.trim();
+      const contrasena = document.getElementById('login-pass').value.trim();
+      const btn = document.getElementById('btn-login');
+
+      document.getElementById('msg-login').className = 'msg';
+      if (!correo || !contrasena) return mostrarMsg('msg-login', 'Completa todos los campos.', 'error');
+
+      btn.disabled = true; btn.textContent = 'Verificando...';
+      try {
+        const res  = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo, contrasena })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          mostrarMsg('msg-login', data.mensaje, 'ok');
+          localStorage.setItem('sst_usuario', JSON.stringify({id: data.id, nombre: data.nombre, rol: data.rol}));
+          setTimeout(() => { window.location.href = '/dashboard.html'; }, 1500);
+        } else {
+          mostrarMsg('msg-login', data.mensaje, 'error');
+        }
+      } catch {
+        mostrarMsg('msg-login', 'No se pudo conectar al servidor.', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Ingresar';
+      }
+    }
+
+    async function registro() {
+      const nombre    = document.getElementById('reg-nombre').value.trim();
+      const correo    = document.getElementById('reg-correo').value.trim();
+      const contrasena = document.getElementById('reg-pass').value.trim();
+      const btn = document.getElementById('btn-registro');
+
+      document.getElementById('msg-registro').className = 'msg';
+      if (!nombre || !correo || !contrasena) return mostrarMsg('msg-registro', 'Completa todos los campos.', 'error');
+      if (contrasena.length < 6) return mostrarMsg('msg-registro', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+
+      btn.disabled = true; btn.textContent = 'Registrando...';
+      try {
+        const res  = await fetch('/api/registro', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, correo, contrasena })
+        });
+        const data = await res.json();
+        mostrarMsg('msg-registro', data.mensaje, data.ok ? 'ok' : 'error');
+        if (data.ok) setTimeout(() => cambiarTab('login'), 2000);
+      } catch {
+        mostrarMsg('msg-registro', 'No se pudo conectar al servidor.', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Registrarse';
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (document.getElementById('form-login').classList.contains('activo')) login();
+        else registro();
+      }
+    });
+  </script>
+
+</body>
+</html>

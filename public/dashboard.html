@@ -6,124 +6,440 @@
   <title>Dashboard SST</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      min-height: 100vh;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
 
     header {
-      background: #3a8fe8;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: #3a8fe8; color: white;
+      padding: 1rem 2rem; display: flex;
+      justify-content: space-between; align-items: center;
     }
-
-    header h1 { font-size: 18px; font-weight: 600; }
-
+    header h1 { font-size: 17px; font-weight: 600; }
+    .header-right { display: flex; align-items: center; gap: 12px; font-size: 14px; }
     .btn-salir {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.4);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px;
     }
-
     .btn-salir:hover { background: rgba(255,255,255,0.3); }
 
-    .contenido {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+    .nav-tabs {
+      background: white; border-bottom: 1px solid #e0e7ef;
+      display: flex; gap: 0; padding: 0 2rem;
     }
+    .nav-tab {
+      padding: 14px 20px; font-size: 14px; font-weight: 500;
+      color: #888; cursor: pointer; border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-tab.activo { color: #3a8fe8; border-bottom-color: #3a8fe8; }
+    .nav-tab:hover { color: #3a8fe8; }
+
+    .contenido { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+
+    .seccion { display: none; }
+    .seccion.activa { display: block; }
+
+    /* Cards del inicio */
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .card {
+      background: white; border-radius: 12px; padding: 1.5rem;
+      text-align: center; cursor: pointer;
+      border: 1px solid #e0e7ef; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .card .icono { font-size: 36px; margin-bottom: 0.8rem; }
+    .card h3 { font-size: 15px; color: #333; margin-bottom: 0.3rem; }
+    .card p { font-size: 12px; color: #888; }
 
     .bienvenida {
-      background: white;
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 1.5rem;
-      border-left: 4px solid #3a8fe8;
+      background: white; border-radius: 12px; padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem; border-left: 4px solid #3a8fe8;
     }
+    .bienvenida h2 { font-size: 18px; color: #111; margin-bottom: 0.3rem; }
+    .bienvenida p { color: #666; font-size: 14px; }
 
-    .bienvenida h2 { font-size: 20px; color: #111; margin-bottom: 0.5rem; }
-    .bienvenida p  { color: #666; font-size: 14px; }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
+    /* Formulario incidente */
+    .form-card {
+      background: white; border-radius: 12px; padding: 2rem;
+      border: 1px solid #e0e7ef; margin-bottom: 1rem;
     }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-      border: 1px solid #e0e7ef;
+    .form-card h3 { font-size: 17px; color: #111; margin-bottom: 1.5rem; font-weight: 600; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid #ccd6e0;
+      border-radius: 8px; font-size: 14px; color: #333; outline: none;
+      transition: border-color 0.2s; font-family: inherit;
     }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #3a8fe8; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
 
-    .card:hover { transform: translateY(-3px); }
-
-    .card .icono {
-      font-size: 36px;
-      margin-bottom: 0.8rem;
+    .btn-primary {
+      background: #3a8fe8; color: white; border: none;
+      padding: 11px 24px; border-radius: 8px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: background 0.2s;
     }
+    .btn-primary:hover { background: #2878d0; }
+    .btn-primary:disabled { background: #9ec5f0; cursor: not-allowed; }
 
-    .card h3 { font-size: 15px; color: #333; margin-bottom: 0.3rem; }
-    .card p  { font-size: 12px; color: #888; }
+    .msg { margin-top: 1rem; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; display: none; }
+    .msg.ok    { background: #e6f4ea; color: #2e7d32; display: block; }
+    .msg.error { background: #fdecea; color: #c62828; display: block; }
+
+    /* Tabla reportes */
+    .tabla-wrap { background: white; border-radius: 12px; border: 1px solid #e0e7ef; overflow: hidden; }
+    .tabla-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e0e7ef; display: flex; justify-content: space-between; align-items: center; }
+    .tabla-header h3 { font-size: 16px; color: #111; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8fafc; padding: 10px 14px; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #e0e7ef; }
+    td { padding: 10px 14px; border-bottom: 1px solid #f0f4f8; color: #333; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    .badge {
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .badge-baja     { background: #e6f4ea; color: #2e7d32; }
+    .badge-media    { background: #fff8e1; color: #f57f17; }
+    .badge-alta     { background: #fff3e0; color: #e65100; }
+    .badge-critica  { background: #fdecea; color: #c62828; }
+
+    .sin-datos { text-align: center; padding: 3rem; color: #888; font-size: 14px; }
+
+    /* Estadísticas */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: white; border-radius: 12px; padding: 1.2rem; text-align: center; border: 1px solid #e0e7ef; }
+    .stat-num { font-size: 32px; font-weight: 700; color: #3a8fe8; }
+    .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .chart-card { background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #e0e7ef; }
+    .chart-card h4 { font-size: 14px; color: #555; margin-bottom: 1rem; font-weight: 600; }
+
+    .bar-item { margin-bottom: 10px; }
+    .bar-label { font-size: 12px; color: #555; margin-bottom: 3px; display: flex; justify-content: space-between; }
+    .bar-track { background: #f0f4f8; border-radius: 4px; height: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; background: #3a8fe8; transition: width 0.5s; }
+    .bar-fill.critica { background: #e53935; }
+    .bar-fill.alta    { background: #fb8c00; }
+    .bar-fill.media   { background: #fdd835; }
+    .bar-fill.baja    { background: #43a047; }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>🦺 Sistema SST — I.D.E. Refinería</h1>
+<header>
+  <h1>🦺 Sistema SST — I.D.E. Refinería</h1>
+  <div class="header-right">
+    <span id="nombre-usuario"></span>
     <button class="btn-salir" onclick="salir()">Cerrar sesión</button>
-  </header>
+  </div>
+</header>
 
-  <div class="contenido">
+<nav class="nav-tabs">
+  <div class="nav-tab activo" onclick="irTab('inicio')">🏠 Inicio</div>
+  <div class="nav-tab" onclick="irTab('reportar')">⚠️ Reportar</div>
+  <div class="nav-tab" onclick="irTab('reportes')">📋 Mis Reportes</div>
+  <div class="nav-tab" onclick="irTab('capacitaciones')">🎓 Capacitaciones</div>
+  <div class="nav-tab" onclick="irTab('estadisticas')">📊 Estadísticas</div>
+</nav>
 
+<div class="contenido">
+
+  <!-- INICIO -->
+  <div class="seccion activa" id="sec-inicio">
     <div class="bienvenida">
       <h2>Bienvenido al Sistema SST 👷</h2>
-      <p>Gestiona incidentes, reportes y capacitaciones de seguridad.</p>
+      <p>Gestiona incidentes, reportes y capacitaciones de seguridad en I.D.E. Refinería.</p>
     </div>
-
-    <div class="cards">
-      <div class="card">
+    <div class="cards-grid">
+      <div class="card" onclick="irTab('reportar')">
         <div class="icono">⚠️</div>
         <h3>Reportar Incidente</h3>
         <p>Registra un nuevo incidente de seguridad</p>
       </div>
-      <div class="card">
+      <div class="card" onclick="irTab('reportes')">
         <div class="icono">📋</div>
         <h3>Mis Reportes</h3>
         <p>Ver historial de reportes enviados</p>
       </div>
-      <div class="card">
+      <div class="card" onclick="irTab('capacitaciones')">
         <div class="icono">🎓</div>
         <h3>Capacitaciones</h3>
         <p>Cursos y entrenamientos disponibles</p>
       </div>
-      <div class="card">
+      <div class="card" onclick="irTab('estadisticas')">
         <div class="icono">📊</div>
         <h3>Estadísticas</h3>
         <p>Indicadores de seguridad del mes</p>
       </div>
     </div>
-
   </div>
 
-  <script>
-    function salir() {
-      window.location.href = '/';
-    }
-  </script>
+  <!-- REPORTAR INCIDENTE -->
+  <div class="seccion" id="sec-reportar">
+    <div class="form-card">
+      <h3>⚠️ Reportar Nuevo Incidente</h3>
+      <div class="form-group">
+        <label>Título del incidente</label>
+        <input type="text" id="inc-titulo" placeholder="Ej: Derrame de aceite en área de calderas"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="inc-tipo">
+            <option value="">Seleccionar...</option>
+            <option value="accidente">Accidente</option>
+            <option value="casi-accidente">Casi accidente</option>
+            <option value="condicion-insegura">Condición insegura</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Severidad</label>
+          <select id="inc-severidad">
+            <option value="">Seleccionar...</option>
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+            <option value="critica">Crítica</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Área / Ubicación</label>
+        <input type="text" id="inc-area" placeholder="Ej: Planta de esterilización, Autoclave 2"/>
+      </div>
+      <div class="form-group">
+        <label>Descripción detallada</label>
+        <textarea id="inc-descripcion" placeholder="Describe qué ocurrió, cómo ocurrió y las consecuencias..."></textarea>
+      </div>
+      <button class="btn-primary" id="btn-reportar" onclick="reportarIncidente()">Enviar Reporte</button>
+      <div class="msg" id="msg-reportar"></div>
+    </div>
+  </div>
 
+  <!-- MIS REPORTES -->
+  <div class="seccion" id="sec-reportes">
+    <div class="tabla-wrap">
+      <div class="tabla-header">
+        <h3>📋 Mis Reportes</h3>
+        <button class="btn-primary" onclick="cargarReportes()" style="padding:7px 14px; font-size:13px;">🔄 Actualizar</button>
+      </div>
+      <div id="tabla-reportes-contenido">
+        <div class="sin-datos">Cargando reportes...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPACITACIONES -->
+  <div class="seccion" id="sec-capacitaciones">
+    <div class="cards-grid">
+      <div class="card">
+        <div class="icono">🔥</div>
+        <h3>Prevención de Incendios</h3>
+        <p>Uso de extintores y evacuación de emergencia</p>
+        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+      </div>
+      <div class="card">
+        <div class="icono">⚡</div>
+        <h3>Seguridad Eléctrica</h3>
+        <p>Riesgos eléctricos en planta industrial</p>
+        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+      </div>
+      <div class="card">
+        <div class="icono">🧪</div>
+        <h3>Manejo de Químicos</h3>
+        <p>Uso seguro de sustancias peligrosas</p>
+        <p style="margin-top:8px; color:#f57f17; font-size:12px; font-weight:600;">🕐 Próximamente</p>
+      </div>
+      <div class="card">
+        <div class="icono">🦺</div>
+        <h3>EPP Correcto</h3>
+        <p>Equipo de protección personal obligatorio</p>
+        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+      </div>
+      <div class="card">
+        <div class="icono">🏭</div>
+        <h3>SCADA y Automatización</h3>
+        <p>Seguridad en sistemas de control industrial</p>
+        <p style="margin-top:8px; color:#f57f17; font-size:12px; font-weight:600;">🕐 Próximamente</p>
+      </div>
+      <div class="card">
+        <div class="icono">🚑</div>
+        <h3>Primeros Auxilios</h3>
+        <p>Respuesta ante emergencias médicas</p>
+        <p style="margin-top:8px; color:#3a8fe8; font-size:12px; font-weight:600;">✅ Disponible</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADÍSTICAS -->
+  <div class="seccion" id="sec-estadisticas">
+    <div class="stats-grid" id="stats-totales">
+      <div class="stat-card"><div class="stat-num" id="stat-total">-</div><div class="stat-label">Total Incidentes</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#e53935" id="stat-criticos">-</div><div class="stat-label">Críticos</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#fb8c00" id="stat-altos">-</div><div class="stat-label">Alta Severidad</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#43a047" id="stat-bajos">-</div><div class="stat-label">Baja Severidad</div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h4>Por Severidad</h4>
+        <div id="chart-severidad"></div>
+      </div>
+      <div class="chart-card">
+        <h4>Por Tipo</h4>
+        <div id="chart-tipo"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Estado ────────────────────────────────────────────────
+  const usuario = JSON.parse(localStorage.getItem('sst_usuario') || 'null');
+  if (!usuario) window.location.href = '/';
+  document.getElementById('nombre-usuario').textContent = '👷 ' + (usuario?.nombre || '');
+
+  function salir() {
+    localStorage.removeItem('sst_usuario');
+    window.location.href = '/';
+  }
+
+  // ── Tabs ──────────────────────────────────────────────────
+  function irTab(tab) {
+    document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('activo'));
+    document.getElementById('sec-' + tab).classList.add('activa');
+    const tabs = ['inicio','reportar','reportes','capacitaciones','estadisticas'];
+    document.querySelectorAll('.nav-tab')[tabs.indexOf(tab)].classList.add('activo');
+    if (tab === 'reportes') cargarReportes();
+    if (tab === 'estadisticas') cargarEstadisticas();
+  }
+
+  // ── Reportar Incidente ────────────────────────────────────
+  async function reportarIncidente() {
+    const titulo      = document.getElementById('inc-titulo').value.trim();
+    const tipo        = document.getElementById('inc-tipo').value;
+    const severidad   = document.getElementById('inc-severidad').value;
+    const area        = document.getElementById('inc-area').value.trim();
+    const descripcion = document.getElementById('inc-descripcion').value.trim();
+    const btn = document.getElementById('btn-reportar');
+    const msg = document.getElementById('msg-reportar');
+
+    msg.className = 'msg';
+    if (!titulo || !tipo || !severidad || !area || !descripcion)
+      return mostrarMsg('msg-reportar', 'Completa todos los campos.', 'error');
+
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    try {
+      const res = await fetch('/api/incidentes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo, tipo, severidad, area, descripcion, usuarioId: usuario.id, usuarioNombre: usuario.nombre })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        mostrarMsg('msg-reportar', '✅ Incidente registrado correctamente.', 'ok');
+        document.getElementById('inc-titulo').value = '';
+        document.getElementById('inc-tipo').value = '';
+        document.getElementById('inc-severidad').value = '';
+        document.getElementById('inc-area').value = '';
+        document.getElementById('inc-descripcion').value = '';
+      } else {
+        mostrarMsg('msg-reportar', data.mensaje, 'error');
+      }
+    } catch {
+      mostrarMsg('msg-reportar', 'No se pudo conectar al servidor.', 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Enviar Reporte';
+    }
+  }
+
+  // ── Mis Reportes ──────────────────────────────────────────
+  async function cargarReportes() {
+    const contenido = document.getElementById('tabla-reportes-contenido');
+    contenido.innerHTML = '<div class="sin-datos">Cargando...</div>';
+    try {
+      const res = await fetch('/api/incidentes?usuarioId=' + usuario.id);
+      const data = await res.json();
+      if (!data.incidentes.length) {
+        contenido.innerHTML = '<div class="sin-datos">No tienes reportes aún. ¡Registra tu primer incidente!</div>';
+        return;
+      }
+      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      contenido.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Título</th><th>Tipo</th><th>Área</th><th>Severidad</th><th>Fecha</th>
+          </tr></thead>
+          <tbody>
+            ${data.incidentes.map(i => {
+              const f = new Date(i.fecha);
+              return `<tr>
+                <td><strong>${i.titulo}</strong><br><span style="color:#888;font-size:11px">${i.descripcion.substring(0,60)}...</span></td>
+                <td>${i.tipo}</td>
+                <td>${i.area}</td>
+                <td><span class="badge badge-${i.severidad}">${i.severidad}</span></td>
+                <td>${f.getDate()} ${meses[f.getMonth()]} ${f.getFullYear()}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+    } catch {
+      contenido.innerHTML = '<div class="sin-datos">Error al cargar reportes.</div>';
+    }
+  }
+
+  // ── Estadísticas ──────────────────────────────────────────
+  async function cargarEstadisticas() {
+    try {
+      const res = await fetch('/api/estadisticas');
+      const data = await res.json();
+
+      document.getElementById('stat-total').textContent = data.total;
+
+      const sev = data.porSeveridad;
+      const getCnt = (arr, val) => (arr.find(x => x._id === val) || {}).count || 0;
+      document.getElementById('stat-criticos').textContent = getCnt(sev, 'critica');
+      document.getElementById('stat-altos').textContent    = getCnt(sev, 'alta');
+      document.getElementById('stat-bajos').textContent    = getCnt(sev, 'baja');
+
+      // Chart severidad
+      const maxSev = Math.max(...sev.map(x => x.count), 1);
+      document.getElementById('chart-severidad').innerHTML = sev.map(s => `
+        <div class="bar-item">
+          <div class="bar-label"><span>${s._id}</span><span>${s.count}</span></div>
+          <div class="bar-track"><div class="bar-fill ${s._id}" style="width:${Math.round(s.count/maxSev*100)}%"></div></div>
+        </div>`).join('') || '<div style="color:#888;font-size:13px">Sin datos aún</div>';
+
+      // Chart tipo
+      const maxTipo = Math.max(...data.porTipo.map(x => x.count), 1);
+      document.getElementById('chart-tipo').innerHTML = data.porTipo.map(t => `
+        <div class="bar-item">
+          <div class="bar-label"><span>${t._id}</span><span>${t.count}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(t.count/maxTipo*100)}%"></div></div>
+        </div>`).join('') || '<div style="color:#888;font-size:13px">Sin datos aún</div>';
+
+    } catch {
+      console.error('Error cargando estadísticas');
+    }
+  }
+
+  function mostrarMsg(id, texto, tipo) {
+    const el = document.getElementById(id);
+    el.textContent = texto;
+    el.className = 'msg ' + tipo;
+  }
+</script>
 </body>
 </html>
