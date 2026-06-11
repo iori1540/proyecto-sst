@@ -223,10 +223,10 @@ async function iniciarBot() {
           try {
             await reply('📤 Subiendo foto...');
             const buffer = await sock.downloadMediaMessage(msg);
-            const tmpPath = `uploads/tmp_${waId}_${Date.now()}.jpg`;
-            fs.writeFileSync(tmpPath, buffer);
-            const result = await cloudinary.uploader.upload(tmpPath, { folder: 'sst_incidentes' });
-            fs.unlinkSync(tmpPath);
+            const result = await cloudinary.uploader.upload(
+              `data:image/jpeg;base64,${buffer.toString('base64')}`,
+              { folder: 'sst_incidentes' }
+            );
             sesion.data.fotoUrl = result.secure_url;
           } catch {
             sesion.data.fotoUrl = null;
