@@ -8,7 +8,7 @@ const cloudinary = require('cloudinary').v2;
 const fs         = require('fs');
 
 // ── WhatsApp Baileys ─────────────────────────────────────────
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, downloadMediaMessage } = require('@whiskeysockets/baileys');
 const pino   = require('pino');
 const qrcode = require('qrcode-terminal');
 
@@ -171,9 +171,12 @@ app.get('/api/estadisticas', async (req, res) => {
 app.listen(PORT, () => console.log('🚀 Servidor SST en http://localhost:' + PORT));
 
 // ── BOT WHATSAPP ─────────────────────────────────────────────
-const sesiones = {};
-
-async function iniciarBot() {
+   const sesiones = {};
+   const procesados = new Set();
+   let botIniciado = false; // ← agregar
+ async function iniciarBot() {
+   if (botIniciado) return; // ← agregar
+   botIniciado = true;
   try {
     const { state, saveCreds } = await useMultiFileAuthState('auth_baileys');
     const { version } = await fetchLatestBaileysVersion();
@@ -203,6 +206,10 @@ async function iniciarBot() {
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
       if (type !== 'notify') return;
       const msg = messages[0];
+      const msgId = msg.key.id;
+      if (procesados.has(msgId)) return;
+      procesados.add(msgId);
+      setTimeout(() => procesados.delete(msgId), 30000);
       if (!msg?.message || msg.key.fromMe) return;
 
       const texto  = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim().toLowerCase();
@@ -222,14 +229,15 @@ async function iniciarBot() {
         if (msg.message.imageMessage) {
           try {
             await reply('📤 Subiendo foto...');
-            const buffer = await sock.downloadMediaMessage(msg);
+           const buffer = await downloadMediaMessage(msg, 'buffer', {});
             const result = await cloudinary.uploader.upload(
               `data:image/jpeg;base64,${buffer.toString('base64')}`,
               { folder: 'sst_incidentes' }
             );
             sesion.data.fotoUrl = result.secure_url;
-          } catch {
-            sesion.data.fotoUrl = null;
+          } catch (err) {
+              console.error('❌ Error Cloudinary:', err.message);
+              sesion.data.fotoUrl = null;
           }
         } else {
           // Si escribe "sin foto"

@@ -240,7 +240,7 @@
             (u.rol !== 'admin'
               ? '<button class="btn-sm btn-primary" onclick="hacerAdmin(\'' + u._id + '\')">Hacer Admin</button>'
               : '<span style="color:#888;font-size:12px">Admin</span>') +
-            '</td></tr>';
+            '<td>' + (i.fotoUrl ? '<img src="' + i.fotoUrl + '" style="width:50px;height:50px;object-fit:cover;border-radius:6px">' : '<span style="color:#aaa;font-size:11px">Sin foto</span>') + '</td></tr>';
         }).join('') + '</tbody></table>';
     } catch {
       document.getElementById('tabla-usuarios').innerHTML = '<div class="sin-datos">Error al cargar.</div>';
