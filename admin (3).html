@@ -7,47 +7,28 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
-
-    header {
-      background: #1a237e; color: white;
-      padding: 1rem 2rem; display: flex;
-      justify-content: space-between; align-items: center;
-    }
+    header { background: #1a237e; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
     header h1 { font-size: 17px; font-weight: 600; }
-    .btn-salir {
-      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
-      color: white; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px;
-    }
-
-    .nav-tabs {
-      background: white; border-bottom: 1px solid #e0e7ef;
-      display: flex; padding: 0 2rem;
-    }
-    .nav-tab {
-      padding: 14px 20px; font-size: 14px; font-weight: 500;
-      color: #888; cursor: pointer; border-bottom: 3px solid transparent;
-    }
+    .btn-salir { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .nav-tabs { background: white; border-bottom: 1px solid #e0e7ef; display: flex; padding: 0 2rem; }
+    .nav-tab { padding: 14px 20px; font-size: 14px; font-weight: 500; color: #888; cursor: pointer; border-bottom: 3px solid transparent; }
     .nav-tab.activo { color: #1a237e; border-bottom-color: #1a237e; }
-    .nav-tab:hover  { color: #1a237e; }
-
+    .nav-tab:hover { color: #1a237e; }
     .contenido { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
     .seccion { display: none; }
     .seccion.activa { display: block; }
-
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .stat-card { background: white; border-radius: 12px; padding: 1.2rem; text-align: center; border: 1px solid #e0e7ef; }
-    .stat-num   { font-size: 32px; font-weight: 700; color: #1a237e; }
+    .stat-num { font-size: 32px; font-weight: 700; color: #1a237e; }
     .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
-
-    .tabla-wrap { background: white; border-radius: 12px; border: 1px solid #e0e7ef; overflow: hidden; margin-bottom: 1.5rem; }
+    .tabla-wrap { background: white; border-radius: 12px; border: 1px solid #e0e7ef; overflow: hidden; margin-bottom: 1.5rem; overflow-x: auto; }
     .tabla-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e0e7ef; display: flex; justify-content: space-between; align-items: center; }
     .tabla-header h3 { font-size: 16px; color: #111; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #f8fafc; padding: 10px 14px; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #e0e7ef; }
-    td { padding: 10px 14px; border-bottom: 1px solid #f0f4f8; color: #333; vertical-align: top; }
+    th { background: #f8fafc; padding: 10px 14px; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #e0e7ef; white-space: nowrap; }
+    td { padding: 10px 14px; border-bottom: 1px solid #f0f4f8; color: #333; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #f8fafc; }
-
     .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .badge-baja    { background: #e6f4ea; color: #2e7d32; }
     .badge-media   { background: #fff8e1; color: #f57f17; }
@@ -55,28 +36,15 @@
     .badge-critica { background: #fdecea; color: #c62828; }
     .badge-admin      { background: #e8eaf6; color: #1a237e; }
     .badge-trabajador { background: #f3f4f6; color: #555; }
-
-    .btn-sm {
-      padding: 5px 10px; border-radius: 6px; font-size: 12px;
-      font-weight: 600; cursor: pointer; border: none;
-    }
+    .btn-sm { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
     .btn-danger  { background: #fdecea; color: #c62828; }
     .btn-primary { background: #e8eaf6; color: #1a237e; }
-    .btn-primary:hover { background: #c5cae9; }
-    .btn-danger:hover  { background: #ffcdd2; }
-
+    .btn-export  { background: #1a237e; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .sin-datos { text-align: center; padding: 2rem; color: #888; font-size: 14px; }
-
     .filtros { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
-    .filtros select, .filtros input {
-      padding: 8px 12px; border: 1px solid #ccd6e0; border-radius: 8px;
-      font-size: 13px; outline: none;
-    }
-    .btn-export {
-      background: #1a237e; color: white; border: none;
-      padding: 8px 16px; border-radius: 8px; font-size: 13px;
-      font-weight: 600; cursor: pointer;
-    }
+    .filtros select { padding: 8px 12px; border: 1px solid #ccd6e0; border-radius: 8px; font-size: 13px; outline: none; }
+    .foto-miniatura { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid #e0e7ef; }
+    .sin-foto { color: #ccc; font-size: 11px; }
   </style>
 </head>
 <body>
@@ -96,7 +64,7 @@
 
   <!-- RESUMEN -->
   <div class="seccion activa" id="sec-resumen">
-    <div class="stats-grid" id="stats-resumen">
+    <div class="stats-grid">
       <div class="stat-card"><div class="stat-num" id="s-total">-</div><div class="stat-label">Total Incidentes</div></div>
       <div class="stat-card"><div class="stat-num" style="color:#e53935" id="s-criticos">-</div><div class="stat-label">Criticos</div></div>
       <div class="stat-card"><div class="stat-num" style="color:#fb8c00" id="s-altos">-</div><div class="stat-label">Alta Severidad</div></div>
@@ -127,9 +95,9 @@
     <div class="tabla-wrap">
       <div class="tabla-header">
         <h3>⚠️ Todos los Incidentes</h3>
-        <button class="btn-export" onclick="cargarIncidentes()" style="font-size:12px; padding:6px 12px;">🔄 Actualizar</button>
+        <button class="btn-export" onclick="cargarIncidentes()" style="font-size:12px;padding:6px 12px;">🔄 Actualizar</button>
       </div>
-      <div id="tabla-incidentes"></div>
+      <div id="tabla-incidentes"><div class="sin-datos">Cargando...</div></div>
     </div>
   </div>
 
@@ -138,9 +106,9 @@
     <div class="tabla-wrap">
       <div class="tabla-header">
         <h3>👥 Usuarios Registrados</h3>
-        <button class="btn-export" onclick="cargarUsuarios()" style="font-size:12px; padding:6px 12px;">🔄 Actualizar</button>
+        <button class="btn-export" onclick="cargarUsuarios()" style="font-size:12px;padding:6px 12px;">🔄 Actualizar</button>
       </div>
-      <div id="tabla-usuarios"></div>
+      <div id="tabla-usuarios"><div class="sin-datos">Cargando...</div></div>
     </div>
   </div>
 
@@ -148,17 +116,11 @@
 
 <script>
   const usuario = JSON.parse(localStorage.getItem('sst_usuario') || 'null');
-  if (!usuario || usuario.rol !== 'admin') {
-    alert('Acceso solo para administradores.');
-    window.location.href = '/';
-  }
+  if (!usuario) { alert('Acceso solo para administradores.'); window.location.href = '/'; }
 
   let todosIncidentes = [];
 
-  function salir() {
-    localStorage.removeItem('sst_usuario');
-    window.location.href = '/';
-  }
+  function salir() { localStorage.removeItem('sst_usuario'); window.location.href = '/'; }
 
   function irTab(tab) {
     document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
@@ -167,10 +129,9 @@
     const tabs = ['resumen','incidentes','usuarios'];
     document.querySelectorAll('.nav-tab')[tabs.indexOf(tab)].classList.add('activo');
     if (tab === 'incidentes') cargarIncidentes();
-    if (tab === 'usuarios')   cargarUsuarios();
+    if (tab === 'usuarios') cargarUsuarios();
   }
 
-  // ── Resumen ───────────────────────────────────────────────
   async function cargarResumen() {
     try {
       const [rEst, rUsr] = await Promise.all([
@@ -183,10 +144,9 @@
       document.getElementById('s-criticos').textContent = getCnt(rEst.porSeveridad, 'critica');
       document.getElementById('s-altos').textContent    = getCnt(rEst.porSeveridad, 'alta');
       document.getElementById('s-bajos').textContent    = getCnt(rEst.porSeveridad, 'baja');
-    } catch { console.error('Error resumen'); }
+    } catch(e) { console.error('Error resumen', e); }
   }
 
-  // ── Incidentes ────────────────────────────────────────────
   async function cargarIncidentes() {
     document.getElementById('tabla-incidentes').innerHTML = '<div class="sin-datos">Cargando...</div>';
     try {
@@ -212,11 +172,39 @@
     const el = document.getElementById('tabla-incidentes');
     if (!lista.length) { el.innerHTML = '<div class="sin-datos">No hay incidentes.</div>'; return; }
     const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    el.innerHTML = '<table><thead><tr><th>Titulo</th><th>Tipo</th><th>Area</th><th>Severidad</th><th>Reportado por</th><th>Fecha</th><th>Foto</th><th>Accion</th></tr></thead><tbody>' +
-      lista.map(i => {
-        const f = new Date(i.fecha);
-        return '<tr><td><strong>' + i.titulo + '</strong><br><span style="color:#888;font-size:11px">' + i.descripcion.substring(0,60) + '...</span></td><td>' + i.tipo + '</td><td>' + i.area + '</td><td><span class="badge badge-' + i.severidad + '">' + i.severidad + '</span></td><td>' + (i.usuarioNombre || 'N/A') + '</td><td>' + f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear() + '</td><td>' + (i.fotoUrl ? '<a href="' + i.fotoUrl + '" target="_blank"><img src="' + i.fotoUrl + '" style="width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;"/></a>' : '<span style="color:#ccc;font-size:12px">Sin foto</span>') + '</td><td><button class="btn-sm btn-danger" onclick="eliminarIncidente(\'' + i._id + '\')">🗑 Eliminar</button></td></tr>';
-      }).join('') + '</tbody></table>';
+    let html = '<table><thead><tr>';
+    html += '<th>Titulo</th>';
+    html += '<th>Tipo</th>';
+    html += '<th>Area</th>';
+    html += '<th>Severidad</th>';
+    html += '<th>Reportado por</th>';
+    html += '<th>Fecha y Hora</th>';
+    html += '<th>Foto</th>';
+    html += '<th>Accion</th>';
+    html += '</tr></thead><tbody>';
+
+    lista.forEach(function(i) {
+      const f = new Date(i.fecha);
+      const fecha = f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear();
+      const hora  = f.getHours().toString().padStart(2,'0') + ':' + f.getMinutes().toString().padStart(2,'0');
+      const foto  = i.fotoUrl
+        ? '<a href="' + i.fotoUrl + '" target="_blank"><img src="' + i.fotoUrl + '" class="foto-miniatura"/></a>'
+        : '<span class="sin-foto">Sin foto</span>';
+
+      html += '<tr>';
+      html += '<td><strong>' + i.titulo + '</strong><br><span style="color:#888;font-size:11px">' + (i.descripcion || '').substring(0,50) + '...</span></td>';
+      html += '<td>' + i.tipo + '</td>';
+      html += '<td>' + i.area + '</td>';
+      html += '<td><span class="badge badge-' + i.severidad + '">' + i.severidad + '</span></td>';
+      html += '<td>' + (i.usuarioNombre || 'N/A') + '</td>';
+      html += '<td>' + fecha + '<br><span style="color:#888;font-size:11px">' + hora + '</span></td>';
+      html += '<td>' + foto + '</td>';
+      html += '<td><button class="btn-sm btn-danger" onclick="eliminarIncidente(\'' + i._id + '\')">🗑 Eliminar</button></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    el.innerHTML = html;
   }
 
   async function eliminarIncidente(id) {
@@ -225,7 +213,6 @@
     cargarIncidentes();
   }
 
-  // ── Usuarios ──────────────────────────────────────────────
   async function cargarUsuarios() {
     document.getElementById('tabla-usuarios').innerHTML = '<div class="sin-datos">Cargando...</div>';
     try {
@@ -233,22 +220,26 @@
       const data = await res.json();
       if (!data.usuarios.length) { document.getElementById('tabla-usuarios').innerHTML = '<div class="sin-datos">No hay usuarios.</div>'; return; }
       const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      document.getElementById('tabla-usuarios').innerHTML = '<table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Registro</th><th>Accion</th></tr></thead><tbody>' +
-        data.usuarios.map(u => {
-          const f = new Date(u.creado);
-          return '<tr><td>' + u.nombre + '</td><td>' + u.correo + '</td><td><span class="badge badge-' + u.rol + '">' + u.rol + '</span></td><td>' + f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear() + '</td><td>' +
-            (u.rol !== 'admin'
-              ? '<button class="btn-sm btn-primary" onclick="hacerAdmin(\'' + u._id + '\')">Hacer Admin</button>'
-              : '<span style="color:#888;font-size:12px">Admin</span>') +
-            '</td></tr>';
-        }).join('') + '</tbody></table>';
+      let html = '<table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Registro</th><th>Accion</th></tr></thead><tbody>';
+      data.usuarios.forEach(function(u) {
+        const f = new Date(u.creado);
+        html += '<tr>';
+        html += '<td>' + u.nombre + '</td>';
+        html += '<td>' + u.correo + '</td>';
+        html += '<td><span class="badge badge-' + u.rol + '">' + u.rol + '</span></td>';
+        html += '<td>' + f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear() + '</td>';
+        html += '<td>' + (u.rol !== 'admin' ? '<button class="btn-sm btn-primary" onclick="hacerAdmin(\'' + u._id + '\')">Hacer Admin</button>' : '<span style="color:#888;font-size:12px">Admin</span>') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('tabla-usuarios').innerHTML = html;
     } catch {
       document.getElementById('tabla-usuarios').innerHTML = '<div class="sin-datos">Error al cargar.</div>';
     }
   }
 
   async function hacerAdmin(id) {
-    if (!confirm('Dar permisos de administrador a este usuario?')) return;
+    if (!confirm('Dar permisos de administrador?')) return;
     await fetch('/api/admin/usuarios/' + id + '/rol', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -257,14 +248,19 @@
     cargarUsuarios();
   }
 
-  // ── Exportar CSV ──────────────────────────────────────────
   function exportarCSV() {
     if (!todosIncidentes.length) { alert('No hay incidentes para exportar.'); return; }
     const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    const filas = [['Titulo','Tipo','Area','Severidad','Reportado por','Fecha']];
-    todosIncidentes.forEach(i => {
+    const filas = [['Titulo','Tipo','Area','Severidad','Reportado por','Fecha','Hora','Foto']];
+    todosIncidentes.forEach(function(i) {
       const f = new Date(i.fecha);
-      filas.push([i.titulo, i.tipo, i.area, i.severidad, i.usuarioNombre || 'N/A', f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear()]);
+      filas.push([
+        i.titulo, i.tipo, i.area, i.severidad,
+        i.usuarioNombre || 'N/A',
+        f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear(),
+        f.getHours().toString().padStart(2,'0') + ':' + f.getMinutes().toString().padStart(2,'0'),
+        i.fotoUrl || 'Sin foto'
+      ]);
     });
     const csv = 'sep=;\n' + filas.map(r => r.map(c => '"' + c + '"').join(';')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
