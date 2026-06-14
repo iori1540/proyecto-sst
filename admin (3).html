@@ -7,19 +7,19 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
-    header { background: #1a237e; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    header { background: #CC0000; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
     header h1 { font-size: 17px; font-weight: 600; }
     .btn-salir { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
     .nav-tabs { background: white; border-bottom: 1px solid #e0e7ef; display: flex; padding: 0 2rem; }
     .nav-tab { padding: 14px 20px; font-size: 14px; font-weight: 500; color: #888; cursor: pointer; border-bottom: 3px solid transparent; }
-    .nav-tab.activo { color: #1a237e; border-bottom-color: #1a237e; }
-    .nav-tab:hover { color: #1a237e; }
+    .nav-tab.activo { color: #CC0000; border-bottom-color: #CC0000; }
+    .nav-tab:hover { color: #CC0000; }
     .contenido { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
     .seccion { display: none; }
     .seccion.activa { display: block; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .stat-card { background: white; border-radius: 12px; padding: 1.2rem; text-align: center; border: 1px solid #e0e7ef; }
-    .stat-num { font-size: 32px; font-weight: 700; color: #1a237e; }
+    .stat-num { font-size: 32px; font-weight: 700; color: #CC0000; }
     .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
     .tabla-wrap { background: white; border-radius: 12px; border: 1px solid #e0e7ef; overflow: hidden; margin-bottom: 1.5rem; overflow-x: auto; }
     .tabla-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e0e7ef; display: flex; justify-content: space-between; align-items: center; }
@@ -34,12 +34,12 @@
     .badge-media   { background: #fff8e1; color: #f57f17; }
     .badge-alta    { background: #fff3e0; color: #e65100; }
     .badge-critica { background: #fdecea; color: #c62828; }
-    .badge-admin      { background: #e8eaf6; color: #1a237e; }
+    .badge-admin      { background: #e8eaf6; color: #CC0000; }
     .badge-trabajador { background: #f3f4f6; color: #555; }
     .btn-sm { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
     .btn-danger  { background: #fdecea; color: #c62828; }
-    .btn-primary { background: #e8eaf6; color: #1a237e; }
-    .btn-export  { background: #1a237e; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: #e8eaf6; color: #CC0000; }
+    .btn-export  { background: #CC0000; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .sin-datos { text-align: center; padding: 2rem; color: #888; font-size: 14px; }
     .filtros { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
     .filtros select { padding: 8px 12px; border: 1px solid #ccd6e0; border-radius: 8px; font-size: 13px; outline: none; }
@@ -69,7 +69,7 @@
       <div class="stat-card"><div class="stat-num" style="color:#e53935" id="s-criticos">-</div><div class="stat-label">Criticos</div></div>
       <div class="stat-card"><div class="stat-num" style="color:#fb8c00" id="s-altos">-</div><div class="stat-label">Alta Severidad</div></div>
       <div class="stat-card"><div class="stat-num" style="color:#43a047" id="s-bajos">-</div><div class="stat-label">Baja Severidad</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:#1a237e" id="s-usuarios">-</div><div class="stat-label">Usuarios Registrados</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#CC0000" id="s-usuarios">-</div><div class="stat-label">Usuarios Registrados</div></div>
     </div>
   </div>
 
