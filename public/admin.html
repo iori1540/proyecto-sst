@@ -212,10 +212,10 @@
     const el = document.getElementById('tabla-incidentes');
     if (!lista.length) { el.innerHTML = '<div class="sin-datos">No hay incidentes.</div>'; return; }
     const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    el.innerHTML = '<table><thead><tr><th>Titulo</th><th>Tipo</th><th>Area</th><th>Severidad</th><th>Reportado por</th><th>Fecha</th><th>Foto</th><th>Accion</th></tr></thead><tbody>' +
+    el.innerHTML = '<table><thead><tr><th>Titulo</th><th>Tipo</th><th>Area</th><th>Severidad</th><th>Reportado por</th><th>Fecha</th><th>Accion</th></tr></thead><tbody>' +
       lista.map(i => {
         const f = new Date(i.fecha);
-        return '<tr><td><strong>' + i.titulo + '</strong><br><span style="color:#888;font-size:11px">' + i.descripcion.substring(0,60) + '...</span></td><td>' + i.tipo + '</td><td>' + i.area + '</td><td><span class="badge badge-' + i.severidad + '">' + i.severidad + '</span></td><td>' + (i.usuarioNombre || 'N/A') + '</td><td>' + f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear() + '</td><td>' + (i.fotoUrl ? '<img src="' + i.fotoUrl + '" style="width:50px;height:50px;object-fit:cover;border-radius:6px">' : 'Sin foto') + '</td><td><button class="btn-sm btn-danger" onclick="eliminarIncidente(\'' + i._id + '\')">🗑 Eliminar</button></td></tr>';
+        return '<tr><td><strong>' + i.titulo + '</strong><br><span style="color:#888;font-size:11px">' + i.descripcion.substring(0,60) + '...</span></td><td>' + i.tipo + '</td><td>' + i.area + '</td><td><span class="badge badge-' + i.severidad + '">' + i.severidad + '</span></td><td>' + (i.usuarioNombre || 'N/A') + '</td><td>' + f.getDate() + ' ' + meses[f.getMonth()] + ' ' + f.getFullYear() + '</td><td><button class="btn-sm btn-danger" onclick="eliminarIncidente(\'' + i._id + '\')">🗑 Eliminar</button></td></tr>';
       }).join('') + '</tbody></table>';
   }
 
@@ -240,7 +240,7 @@
             (u.rol !== 'admin'
               ? '<button class="btn-sm btn-primary" onclick="hacerAdmin(\'' + u._id + '\')">Hacer Admin</button>'
               : '<span style="color:#888;font-size:12px">Admin</span>') +
-            '<td>' + (i.fotoUrl ? '<img src="' + i.fotoUrl + '" style="width:50px;height:50px;object-fit:cover;border-radius:6px">' : '<span style="color:#aaa;font-size:11px">Sin foto</span>') + '</td></tr>';
+            '</td></tr>';
         }).join('') + '</tbody></table>';
     } catch {
       document.getElementById('tabla-usuarios').innerHTML = '<div class="sin-datos">Error al cargar.</div>';
