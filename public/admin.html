@@ -168,7 +168,7 @@ const f=new Date(u.creado);
 h+="<tr><td>"+u.nombre+"</td><td>"+u.correo+"</td>";
 h+="<td><span class='badge badge-"+u.rol+"'>"+u.rol+"</span></td>";
 h+="<td>"+f.getDate()+" "+M[f.getMonth()]+" "+f.getFullYear()+"</td>";
-h+="<td>"+(u.rol!=="admin"?"<button class='btn-sm btn-primary' onclick='hacerAdmin(\""+u._id+"\")'>Hacer Admin</button>":"<span style='color:#888'>Admin</span>")+"</td></tr>";
+h+="<td>"+(u.rol!=="admin"?"<button class='btn-sm btn-primary' onclick='hacerAdmin(\""+u._id+"\")'>Hacer Admin</button>":"<span style='color:#888'>Admin</span>")+" <button class='btn-sm btn-danger' onclick='eliminarUsuario(\""+u._id+"\")'>Eliminar</button></td></tr>";
 });
 h+="</tbody></table>";
 document.getElementById("tabla-usuarios").innerHTML=h;
@@ -177,6 +177,11 @@ document.getElementById("tabla-usuarios").innerHTML=h;
 async function hacerAdmin(id){
 if(!confirm("Dar permisos admin?"))return;
 await fetch("/api/admin/usuarios/"+id+"/rol",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({rol:"admin"})});
+cargarUsuarios();
+}
+async function eliminarUsuario(id){
+if(!confirm("¿Eliminar este usuario? Esta acción no se puede deshacer."))return;
+await fetch("/api/admin/usuarios/"+id,{method:"DELETE"});
 cargarUsuarios();
 }
 function exportarCSV(){

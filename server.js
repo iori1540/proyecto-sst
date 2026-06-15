@@ -211,6 +211,15 @@ app.put('/api/admin/usuarios/:id/rol', async (req, res) => {
   }
 });
 
+app.delete('/api/admin/usuarios/:id', async (req, res) => {
+  try {
+    await Usuario.findByIdAndDelete(req.params.id);
+    res.json({ ok: true, mensaje: 'Usuario eliminado.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
+  }
+});
+
 app.get('/api/estadisticas', async (req, res) => {
   try {
     const total        = await Incidente.countDocuments();
@@ -263,13 +272,14 @@ app.get('/api/whatsapp/estado', (req, res) => {
       const numeroEnv = process.env.WA_PHONE_NUMBER;
 
       const pedirCodigo = async (numero) => {
+        await new Promise(r => setTimeout(r, 8000));
         try {
           const code = await sock.requestPairingCode(numero.trim());
           codigoVinculacion = code;
           console.log(`\n🔑 Tu código: ${code}`);
           console.log('WhatsApp → Dispositivos vinculados → Vincular con número\n');
         } catch (e) {
-          console.error('Error al pedir código:', e.message);
+          console.error('Error al pedir código:', e.message, e.stack);
           codigoSolicitado = false;
         }
       };
