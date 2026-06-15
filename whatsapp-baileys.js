@@ -2,7 +2,6 @@ require('dotenv').config();
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const mongoose = require('mongoose');
 const pino = require('pino');
-const qrcode = require('qrcode-terminal');
 
 // ── Conexión MongoDB ─────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
@@ -37,11 +36,19 @@ async function iniciarBot() {
 
   sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
-    if (qr) {
-      console.log('\n📱 Escanea este QR con tu WhatsApp:\n');
-      qrcode.generate(qr, { small: true });
-    }
+  // Solicitar código por número si no está registrado
+  if (!sock.authState.creds.registered) {
+    const readline = require('readline');
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question('📱 Ingresa tu número (ej: 51987654321): ', async (numero) => {
+      rl.close();
+      const code = await sock.requestPairingCode(numero.trim());
+      console.log(`\n🔑 Tu código: ${code}`);
+      console.log('Ve a WhatsApp → Dispositivos vinculados → Vincular con número de teléfono\n');
+    });
+  }
+
+  sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
     if (connection === 'close') {
       const code = lastDisconnect?.error?.output?.statusCode;
       const reconnect = code !== DisconnectReason.loggedOut;

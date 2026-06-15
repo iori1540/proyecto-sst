@@ -8,9 +8,8 @@ const cloudinary = require('cloudinary').v2;
 const fs         = require('fs');
 
 // ── WhatsApp Baileys ─────────────────────────────────────────
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, DisconnectReason, fetchLatestBaileysVersion, downloadMediaMessage, Browsers, initAuthCreds, BufferJSON, proto } = require('@whiskeysockets/baileys');
 const pino   = require('pino');
-const qrcode = require('qrcode-terminal');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -58,6 +57,61 @@ const incidenteSchema = new mongoose.Schema({
   fecha:         { type: Date, default: Date.now }
 });
 const Incidente = mongoose.model('Incidente', incidenteSchema);
+
+// ── Sesión de WhatsApp (persistida en Mongo para sobrevivir reinicios en Render) ──
+const baileysAuthSchema = new mongoose.Schema({
+  _id:   String,
+  value: String
+});
+const BaileysAuth = mongoose.model('BaileysAuth', baileysAuthSchema, 'baileys_auth');
+
+async function useMongoAuthState() {
+  const writeData = async (id, data) => {
+    const value = JSON.stringify(data, BufferJSON.replacer);
+    await BaileysAuth.findByIdAndUpdate(id, { value }, { upsert: true });
+  };
+  const readData = async (id) => {
+    const doc = await BaileysAuth.findById(id).lean();
+    if (!doc) return null;
+    return JSON.parse(doc.value, BufferJSON.reviver);
+  };
+  const removeData = async (id) => {
+    await BaileysAuth.findByIdAndDelete(id);
+  };
+
+  const creds = (await readData('creds')) || initAuthCreds();
+
+  return {
+    state: {
+      creds,
+      keys: {
+        get: async (type, ids) => {
+          const data = {};
+          await Promise.all(ids.map(async (id) => {
+            let value = await readData(`${type}-${id}`);
+            if (type === 'app-state-sync-key' && value) {
+              value = proto.Message.AppStateSyncKeyData.fromObject(value);
+            }
+            data[id] = value;
+          }));
+          return data;
+        },
+        set: async (data) => {
+          const tasks = [];
+          for (const category in data) {
+            for (const id in data[category]) {
+              const value = data[category][id];
+              const docId = `${category}-${id}`;
+              tasks.push(value ? writeData(docId, value) : removeData(docId));
+            }
+          }
+          await Promise.all(tasks);
+        }
+      }
+    },
+    saveCreds: async () => writeData('creds', creds)
+  };
+}
 
 // ── RUTAS API ────────────────────────────────────────────────
 app.post('/api/registro', async (req, res) => {
@@ -174,11 +228,23 @@ app.listen(PORT, () => console.log('🚀 Servidor SST en http://localhost:' + PO
    const sesiones = {};
    const procesados = new Set();
    let botIniciado = false; // ← agregar
+   let codigoSolicitado = false;
+   let codigoVinculacion = null;
+   let waConectado = false;
+
+// Estado de vinculación: GET /api/whatsapp/estado?token=ADMIN_TOKEN
+app.get('/api/whatsapp/estado', (req, res) => {
+  if (process.env.ADMIN_TOKEN && req.query.token !== process.env.ADMIN_TOKEN) {
+    return res.status(403).json({ ok: false, mensaje: 'No autorizado.' });
+  }
+  res.json({ ok: true, conectado: waConectado, codigo: codigoVinculacion });
+});
+
  async function iniciarBot() {
    if (botIniciado) return; // ← agregar
    botIniciado = true;
   try {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_baileys');
+    const { state, saveCreds } = await useMongoAuthState();
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
@@ -186,21 +252,60 @@ app.listen(PORT, () => console.log('🚀 Servidor SST en http://localhost:' + PO
       auth: state,
       logger: pino({ level: 'silent' }),
       printQRInTerminal: false,
-      browser: ['Bot SST', 'Chrome', '1.0.0'],
+      browser: Browsers.ubuntu('Chrome'),
     });
 
     sock.ev.on('creds.update', saveCreds);
 
-    sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
-      if (qr) {
-        console.log('\n📱 Escanea este QR con tu WhatsApp:\n');
-        qrcode.generate(qr, { small: true });
+    // Vincular por número en vez de QR
+    if (!sock.authState.creds.registered && !codigoSolicitado) {
+      codigoSolicitado = true;
+      const numeroEnv = process.env.WA_PHONE_NUMBER;
+
+      const pedirCodigo = async (numero) => {
+        try {
+          const code = await sock.requestPairingCode(numero.trim());
+          codigoVinculacion = code;
+          console.log(`\n🔑 Tu código: ${code}`);
+          console.log('WhatsApp → Dispositivos vinculados → Vincular con número\n');
+        } catch (e) {
+          console.error('Error al pedir código:', e.message);
+          codigoSolicitado = false;
+        }
+      };
+
+      if (numeroEnv) {
+        // Producción (Render): número configurado por variable de entorno, sin consola interactiva
+        await pedirCodigo(numeroEnv);
+      } else {
+        // Desarrollo local: pedir el número por consola
+        const readline = require('readline');
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        rl.question('📱 Ingresa tu número (ej: 51987654321): ', async (numero) => {
+          rl.close();
+          await pedirCodigo(numero);
+        });
       }
+    }
+
+    sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
       if (connection === 'close') {
+        waConectado = false;
         const code = lastDisconnect?.error?.output?.statusCode;
-        if (code !== DisconnectReason.loggedOut) iniciarBot();
+        if (code !== DisconnectReason.loggedOut) {
+          botIniciado = false;
+          iniciarBot();
+        } else {
+          codigoSolicitado = false;
+          codigoVinculacion = null;
+        }
       }
-      if (connection === 'open') console.log('✅ Bot WhatsApp conectado!');
+      if (connection === 'open') {
+        codigoSolicitado = false;
+        codigoVinculacion = null;
+        waConectado = true;
+        console.log('✅ Bot WhatsApp conectado!');
+      }
     });
 
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
