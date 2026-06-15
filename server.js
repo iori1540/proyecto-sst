@@ -276,7 +276,7 @@ app.get('/api/whatsapp/estado', (req, res) => {
 
       if (numeroEnv) {
         // Producción (Render): número configurado por variable de entorno, sin consola interactiva
-        await pedirCodigo(numeroEnv);
+        setTimeout(() => pedirCodigo(numeroEnv), 5000);
       } else {
         // Desarrollo local: pedir el número por consola
         const readline = require('readline');
