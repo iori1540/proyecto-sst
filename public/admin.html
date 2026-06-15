@@ -134,13 +134,13 @@ function renderIncidentes(lista){
 const el=document.getElementById("tabla-incidentes");
 if(!lista.length){el.innerHTML="<div class='sin-datos'>No hay incidentes.</div>";return;}
 const M=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-let h="<table><thead><tr><th>Titulo</th><th>Tipo</th><th>Area</th><th>Severidad</th><th>Reportado por</th><th>Fecha y Hora</th><th>Foto</th><th>Accion</th></tr></thead><tbody>";
-lista.forEach(function(i){
+let h="<table><thead><tr><th>N°</th><th>Titulo</th><th>Tipo</th><th>Area</th><th>Severidad</th><th>Reportado por</th><th>Fecha y Hora</th><th>Foto</th><th>Accion</th></tr></thead><tbody>";
+lista.forEach(function(i,idx){
 const f=new Date(i.fecha);
 const fecha=f.getDate()+" "+M[f.getMonth()]+" "+f.getFullYear();
 const hora=f.getHours().toString().padStart(2,"0")+":"+f.getMinutes().toString().padStart(2,"0");
 const foto=i.fotoUrl?"<a href='"+i.fotoUrl+"' target='_blank'><img src='"+i.fotoUrl+"' class='foto-mini'/></a>":"<span class='sin-foto'>Sin foto</span>";
-h+="<tr><td><strong>"+i.titulo+"</strong><br><span style='color:#888;font-size:11px'>"+(i.descripcion||"").substring(0,50)+"...</span></td>";
+h+="<tr><td style='text-align:center;color:#888;font-weight:600'>"+(idx+1)+"</td><td><strong>"+i.titulo+"</strong><br><span style='color:#888;font-size:11px'>"+(i.descripcion||"").substring(0,50)+"...</span></td>";
 h+="<td>"+i.tipo+"</td><td>"+i.area+"</td>";
 h+="<td><span class='badge badge-"+i.severidad+"'>"+i.severidad+"</span></td>";
 h+="<td>"+(i.usuarioNombre||"N/A")+"</td>";
