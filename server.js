@@ -250,10 +250,33 @@ app.listen(PORT, () => console.log('🚀 Servidor SST en http://localhost:' + PO
 // ── BOT WHATSAPP ─────────────────────────────────────────────
    const sesiones = {};
    const procesados = new Set();
-   let botIniciado = false; // ← agregar
+   let botIniciado    = false;
+   let reconectando   = false;
+   let reconexionTimer = null;
+   let delaReconexion = 5000;   // empieza en 5 s, sube hasta MAX_DELAY
+   const MAX_DELAY    = 60000;
+   let sockActivo     = null;   // única instancia del socket activo
    let codigoSolicitado = false;
    let codigoVinculacion = null;
    let waConectado = false;
+
+function programarReconexion() {
+  if (reconectando) return;           // ya hay una reconexión programada
+  reconectando = true;
+  botIniciado  = false;
+  if (sockActivo) {
+    try { sockActivo.end(undefined); } catch {}
+    sockActivo = null;
+  }
+  console.log(`⏳ Reconectando en ${delaReconexion / 1000}s...`);
+  clearTimeout(reconexionTimer);
+  reconexionTimer = setTimeout(() => {
+    reconectando   = false;
+    reconexionTimer = null;
+    iniciarBot();
+  }, delaReconexion);
+  delaReconexion = Math.min(delaReconexion * 2, MAX_DELAY);
+}
 
 // Estado de vinculación: GET /api/whatsapp/estado?token=ADMIN_TOKEN
 app.get('/api/whatsapp/estado', (req, res) => {
@@ -264,7 +287,7 @@ app.get('/api/whatsapp/estado', (req, res) => {
 });
 
  async function iniciarBot() {
-   if (botIniciado) return; // ← agregar
+   if (botIniciado) return;
    botIniciado = true;
   try {
     const { state, saveCreds } = await useMongoAuthState();
@@ -278,6 +301,7 @@ app.get('/api/whatsapp/estado', (req, res) => {
       browser: Browsers.ubuntu('Chrome'),
     });
 
+    sockActivo = sock;
     sock.ev.on('creds.update', saveCreds);
 
     // Vincular por número en vez de QR
@@ -317,15 +341,18 @@ app.get('/api/whatsapp/estado', (req, res) => {
         waConectado = false;
         const code = lastDisconnect?.error?.output?.statusCode;
         if (code !== DisconnectReason.loggedOut) {
-          botIniciado = false;
-          iniciarBot();
+          programarReconexion();
         } else {
-          codigoSolicitado = false;
+          // sesión cerrada intencionalmente — no reconectar
+          botIniciado = false;
+          sockActivo  = null;
+          codigoSolicitado  = false;
           codigoVinculacion = null;
         }
       }
       if (connection === 'open') {
-        codigoSolicitado = false;
+        delaReconexion    = 5000; // reset backoff al conectar con éxito
+        codigoSolicitado  = false;
         codigoVinculacion = null;
         waConectado = true;
         console.log('✅ Bot WhatsApp conectado!');
@@ -462,6 +489,7 @@ app.get('/api/whatsapp/estado', (req, res) => {
 
   } catch (err) {
     console.error('Error bot:', err.message);
-    setTimeout(iniciarBot, 5000);
+    botIniciado = false;
+    programarReconexion();
   }
 }
