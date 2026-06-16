@@ -343,11 +343,16 @@ app.get('/api/whatsapp/estado', (req, res) => {
 
       const texto  = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim().toLowerCase();
       const from   = msg.key.remoteJid;
+      const esGrupo = from.endsWith('@g.us');
       const waId   = msg.key.participant || from;
       const nombre = msg.pushName || 'Trabajador';
 
       const reply = async (text) => {
-        await sock.sendMessage(from, { text }, { quoted: msg });
+        if (esGrupo) {
+          await sock.sendMessage(from, { text: `@${waId.split('@')[0]} ${text}`, mentions: [waId] }, { quoted: msg });
+        } else {
+          await sock.sendMessage(from, { text }, { quoted: msg });
+        }
       };
 
       // Manejo de foto en paso 6
@@ -374,7 +379,8 @@ app.get('/api/whatsapp/estado', (req, res) => {
         }
 
         try {
-          await Incidente.create(sesion.data);
+          const numeroRegistro = await siguienteNumero();
+          await Incidente.create({ ...sesion.data, numeroRegistro });
           delete sesiones[waId];
           await reply(
             `✅ *Incidente registrado*\n\n` +
