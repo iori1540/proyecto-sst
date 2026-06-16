@@ -45,6 +45,7 @@ const usuarioSchema = new mongoose.Schema({
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 const incidenteSchema = new mongoose.Schema({
+  numeroRegistro: { type: Number, unique: true },
   titulo:        String,
   tipo:          String,
   area:          String,
@@ -57,6 +58,18 @@ const incidenteSchema = new mongoose.Schema({
   fecha:         { type: Date, default: Date.now }
 });
 const Incidente = mongoose.model('Incidente', incidenteSchema);
+
+const contadorSchema = new mongoose.Schema({ _id: String, seq: { type: Number, default: 0 } });
+const Contador = mongoose.model('Contador', contadorSchema);
+
+async function siguienteNumero() {
+  const doc = await Contador.findByIdAndUpdate(
+    'incidentes',
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true }
+  );
+  return doc.seq;
+}
 
 // ── Sesión de WhatsApp (persistida en Mongo para sobrevivir reinicios en Render) ──
 const baileysAuthSchema = new mongoose.Schema({
@@ -165,7 +178,8 @@ app.post('/api/incidentes', async (req, res) => {
     const { titulo, tipo, area, descripcion, severidad, usuarioId, usuarioNombre, fotoUrl } = req.body;
     if (!titulo || !tipo || !area || !descripcion || !severidad)
       return res.status(400).json({ ok: false, mensaje: 'Completa todos los campos.' });
-    const inc = await Incidente.create({ titulo, tipo, area, descripcion, severidad, usuarioId, usuarioNombre, fotoUrl });
+    const numeroRegistro = await siguienteNumero();
+    const inc = await Incidente.create({ numeroRegistro, titulo, tipo, area, descripcion, severidad, usuarioId, usuarioNombre, fotoUrl });
     res.status(201).json({ ok: true, mensaje: 'Incidente registrado.', incidente: inc });
   } catch (err) {
     res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
