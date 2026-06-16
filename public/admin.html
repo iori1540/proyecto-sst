@@ -133,6 +133,7 @@ renderIncidentes(l);
 function renderIncidentes(lista){
 const el=document.getElementById("tabla-incidentes");
 if(!lista.length){el.innerHTML="<div class='sin-datos'>No hay incidentes.</div>";return;}
+lista=lista.slice().sort((a,b)=>(a.numeroRegistro||0)-(b.numeroRegistro||0));
 const M=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 let h="<table><thead><tr><th>Número de Registro</th><th>Titulo</th><th>Tipo</th><th>Area</th><th>Severidad</th><th>Reportado por</th><th>Fecha y Hora</th><th>Foto</th><th>Accion</th></tr></thead><tbody>";
 lista.forEach(function(i,idx){
