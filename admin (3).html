@@ -43,6 +43,8 @@
     .sin-datos { text-align: center; padding: 2rem; color: #888; font-size: 14px; }
     .filtros { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
     .filtros select { padding: 8px 12px; border: 1px solid #ccd6e0; border-radius: 8px; font-size: 13px; outline: none; }
+    .filtros input[type="text"] { padding: 8px 12px 8px 34px; border: 1px solid #ccd6e0; border-radius: 8px; font-size: 13px; outline: none; min-width: 240px; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 10px center; }
+    .filtros input[type="text"]:focus { border-color: #CC0000; }
     .foto-miniatura { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid #e0e7ef; }
     .sin-foto { color: #ccc; font-size: 11px; }
   </style>
@@ -76,6 +78,7 @@
   <!-- TODOS LOS INCIDENTES -->
   <div class="seccion" id="sec-incidentes">
     <div class="filtros">
+      <input type="text" id="busqueda-incidentes" placeholder="Buscar por N° registro, título, área, reportado por..." oninput="filtrarIncidentes()">
       <select id="filtro-severidad" onchange="filtrarIncidentes()">
         <option value="">Todas las severidades</option>
         <option value="critica">Critica</option>
@@ -160,11 +163,18 @@
   }
 
   function filtrarIncidentes() {
-    const sev  = document.getElementById('filtro-severidad').value;
-    const tipo = document.getElementById('filtro-tipo').value;
-    let lista  = todosIncidentes;
+    const sev    = document.getElementById('filtro-severidad').value;
+    const tipo   = document.getElementById('filtro-tipo').value;
+    const busq   = document.getElementById('busqueda-incidentes').value.trim().toLowerCase();
+    let lista    = todosIncidentes;
     if (sev)  lista = lista.filter(i => i.severidad === sev);
     if (tipo) lista = lista.filter(i => i.tipo === tipo);
+    if (busq) lista = lista.filter(i =>
+      (String(i.numeroRegistro || '')).toLowerCase().includes(busq) ||
+      (i.titulo  || '').toLowerCase().includes(busq) ||
+      (i.area    || '').toLowerCase().includes(busq) ||
+      (i.usuarioNombre || '').toLowerCase().includes(busq)
+    );
     renderIncidentes(lista);
   }
 
@@ -173,6 +183,7 @@
     if (!lista.length) { el.innerHTML = '<div class="sin-datos">No hay incidentes.</div>'; return; }
     const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     let html = '<table><thead><tr>';
+    html += '<th>N° Reg</th>';
     html += '<th>Titulo</th>';
     html += '<th>Tipo</th>';
     html += '<th>Area</th>';
@@ -192,6 +203,7 @@
         : '<span class="sin-foto">Sin foto</span>';
 
       html += '<tr>';
+      html += '<td style="font-weight:600;color:#CC0000;white-space:nowrap">#' + (i.numeroRegistro || '-') + '</td>';
       html += '<td><strong>' + i.titulo + '</strong><br><span style="color:#888;font-size:11px">' + (i.descripcion || '').substring(0,50) + '...</span></td>';
       html += '<td>' + i.tipo + '</td>';
       html += '<td>' + i.area + '</td>';
