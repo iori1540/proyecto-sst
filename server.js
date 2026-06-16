@@ -245,7 +245,18 @@ app.get('/api/estadisticas', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log('🚀 Servidor SST en http://localhost:' + PORT));
+app.get('/health', (req, res) => res.json({ ok: true, uptime: process.uptime() }));
+
+app.listen(PORT, () => {
+  console.log('🚀 Servidor SST en http://localhost:' + PORT);
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://proyecto-sst-i8zu.onrender.com';
+  setInterval(() => {
+    fetch(SELF_URL + '/health')
+      .then(r => r.json())
+      .then(() => console.log('🏓 Keep-alive ping OK'))
+      .catch(e => console.warn('⚠️ Keep-alive ping falló:', e.message));
+  }, 10 * 60 * 1000);
+});
 
 // ── BOT WHATSAPP ─────────────────────────────────────────────
    const sesiones = {};
