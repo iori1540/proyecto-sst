@@ -440,7 +440,7 @@ app.get('/api/whatsapp/estado', (req, res) => {
 
       if (texto === '!ayuda' || texto === '!help') {
         await reply(
-          `🦺 *Sistema SST — I.D.E. Refinería*\n\n` +
+          `🦺 *Por Mantenimiento Envasado*\n\n` +
           `📋 *Comandos:*\n\n` +
           `*!reporte* — Registrar incidente\n` +
           `*!misreportes* — Ver mis reportes\n` +
