@@ -1,27 +1,16 @@
 require('dotenv').config();
-const express    = require('express');
-const mongoose   = require('mongoose');
-const bcrypt     = require('bcryptjs');
-const path       = require('path');
-const multer     = require('multer');
-const cloudinary = require('cloudinary').v2;
-const fs         = require('fs');
+const express  = require('express');
+const mongoose = require('mongoose');
+const bcrypt   = require('bcryptjs');
+const path     = require('path');
 
 // ── WhatsApp Baileys ─────────────────────────────────────────
-const { default: makeWASocket, DisconnectReason, fetchLatestBaileysVersion, downloadMediaMessage, Browsers, initAuthCreds, BufferJSON, proto } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const pino   = require('pino');
+const qrcode = require('qrcode-terminal');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-
-// ── Cloudinary ───────────────────────────────────────────────
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-const upload = multer({ dest: 'uploads/' });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -30,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Conectado a MongoDB Atlas');
-    iniciarBot();
+    iniciarBot(); // Inicia el bot cuando MongoDB esté listo
   })
   .catch(err => console.error('❌ Error MongoDB:', err.message));
 
@@ -45,7 +34,6 @@ const usuarioSchema = new mongoose.Schema({
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 const incidenteSchema = new mongoose.Schema({
-  numeroRegistro: { type: Number, unique: true },
   titulo:        String,
   tipo:          String,
   area:          String,
@@ -54,77 +42,9 @@ const incidenteSchema = new mongoose.Schema({
   usuarioId:     { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
   usuarioNombre: String,
   usuarioWa:     String,
-  fotoUrl:       String,
   fecha:         { type: Date, default: Date.now }
 });
 const Incidente = mongoose.model('Incidente', incidenteSchema);
-
-const contadorSchema = new mongoose.Schema({ _id: String, seq: { type: Number, default: 0 } });
-const Contador = mongoose.model('Contador', contadorSchema);
-
-async function siguienteNumero() {
-  const doc = await Contador.findByIdAndUpdate(
-    'incidentes',
-    { $inc: { seq: 1 } },
-    { upsert: true, new: true }
-  );
-  return doc.seq;
-}
-
-// ── Sesión de WhatsApp (persistida en Mongo para sobrevivir reinicios en Render) ──
-const baileysAuthSchema = new mongoose.Schema({
-  _id:   String,
-  value: String
-});
-const BaileysAuth = mongoose.model('BaileysAuth', baileysAuthSchema, 'baileys_auth');
-
-async function useMongoAuthState() {
-  const writeData = async (id, data) => {
-    const value = JSON.stringify(data, BufferJSON.replacer);
-    await BaileysAuth.findByIdAndUpdate(id, { value }, { upsert: true });
-  };
-  const readData = async (id) => {
-    const doc = await BaileysAuth.findById(id).lean();
-    if (!doc) return null;
-    return JSON.parse(doc.value, BufferJSON.reviver);
-  };
-  const removeData = async (id) => {
-    await BaileysAuth.findByIdAndDelete(id);
-  };
-
-  const creds = (await readData('creds')) || initAuthCreds();
-
-  return {
-    state: {
-      creds,
-      keys: {
-        get: async (type, ids) => {
-          const data = {};
-          await Promise.all(ids.map(async (id) => {
-            let value = await readData(`${type}-${id}`);
-            if (type === 'app-state-sync-key' && value) {
-              value = proto.Message.AppStateSyncKeyData.fromObject(value);
-            }
-            data[id] = value;
-          }));
-          return data;
-        },
-        set: async (data) => {
-          const tasks = [];
-          for (const category in data) {
-            for (const id in data[category]) {
-              const value = data[category][id];
-              const docId = `${category}-${id}`;
-              tasks.push(value ? writeData(docId, value) : removeData(docId));
-            }
-          }
-          await Promise.all(tasks);
-        }
-      }
-    },
-    saveCreds: async () => writeData('creds', creds)
-  };
-}
 
 // ── RUTAS API ────────────────────────────────────────────────
 app.post('/api/registro', async (req, res) => {
@@ -160,26 +80,12 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ── Subir foto ───────────────────────────────────────────────
-app.post('/api/upload', upload.single('foto'), async (req, res) => {
-  try {
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'sst_incidentes'
-    });
-    fs.unlinkSync(req.file.path);
-    res.json({ ok: true, url: result.secure_url });
-  } catch (err) {
-    res.status(500).json({ ok: false, mensaje: 'Error al subir imagen.' });
-  }
-});
-
 app.post('/api/incidentes', async (req, res) => {
   try {
-    const { titulo, tipo, area, descripcion, severidad, usuarioId, usuarioNombre, fotoUrl } = req.body;
+    const { titulo, tipo, area, descripcion, severidad, usuarioId, usuarioNombre } = req.body;
     if (!titulo || !tipo || !area || !descripcion || !severidad)
       return res.status(400).json({ ok: false, mensaje: 'Completa todos los campos.' });
-    const numeroRegistro = await siguienteNumero();
-    const inc = await Incidente.create({ numeroRegistro, titulo, tipo, area, descripcion, severidad, usuarioId, usuarioNombre, fotoUrl });
+    const inc = await Incidente.create({ titulo, tipo, area, descripcion, severidad, usuarioId, usuarioNombre });
     res.status(201).json({ ok: true, mensaje: 'Incidente registrado.', incidente: inc });
   } catch (err) {
     res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
@@ -225,83 +131,31 @@ app.put('/api/admin/usuarios/:id/rol', async (req, res) => {
   }
 });
 
-app.delete('/api/admin/usuarios/:id', async (req, res) => {
-  try {
-    await Usuario.findByIdAndDelete(req.params.id);
-    res.json({ ok: true, mensaje: 'Usuario eliminado.' });
-  } catch (err) {
-    res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
-  }
-});
-
 app.get('/api/estadisticas', async (req, res) => {
   try {
     const total        = await Incidente.countDocuments();
     const porSeveridad = await Incidente.aggregate([{ $group: { _id: '$severidad', count: { $sum: 1 } } }]);
     const porTipo      = await Incidente.aggregate([{ $group: { _id: '$tipo',      count: { $sum: 1 } } }]);
-    res.json({ ok: true, total, porSeveridad, porTipo });
+    const porMes       = await Incidente.aggregate([
+      { $group: { _id: { mes: { $month: '$fecha' }, anio: { $year: '$fecha' } }, count: { $sum: 1 } } },
+      { $sort: { '_id.anio': 1, '_id.mes': 1 } },
+      { $limit: 6 }
+    ]);
+    res.json({ ok: true, total, porSeveridad, porTipo, porMes });
   } catch (err) {
     res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
   }
 });
 
-app.get('/health', (req, res) => res.json({ ok: true, uptime: process.uptime() }));
-
-app.listen(PORT, () => {
-  console.log('🚀 Servidor SST en http://localhost:' + PORT);
-  const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://proyecto-sst-i8zu.onrender.com';
-  setInterval(() => {
-    fetch(SELF_URL + '/health')
-      .then(r => r.json())
-      .then(() => console.log('🏓 Keep-alive ping OK'))
-      .catch(e => console.warn('⚠️ Keep-alive ping falló:', e.message));
-  }, 10 * 60 * 1000);
-});
+// ── Servidor ─────────────────────────────────────────────────
+app.listen(PORT, () => console.log('🚀 Servidor SST en http://localhost:' + PORT));
 
 // ── BOT WHATSAPP ─────────────────────────────────────────────
-   const sesiones = {};
-   const procesados = new Set();
-   let botIniciado    = false;
-   let reconectando   = false;
-   let reconexionTimer = null;
-   let delaReconexion = 5000;   // empieza en 5 s, sube hasta MAX_DELAY
-   const MAX_DELAY    = 60000;
-   let sockActivo     = null;   // única instancia del socket activo
-   let codigoSolicitado = false;
-   let codigoVinculacion = null;
-   let waConectado = false;
+const sesiones = {};
 
-function programarReconexion() {
-  if (reconectando) return;           // ya hay una reconexión programada
-  reconectando = true;
-  botIniciado  = false;
-  if (sockActivo) {
-    try { sockActivo.end(undefined); } catch {}
-    sockActivo = null;
-  }
-  console.log(`⏳ Reconectando en ${delaReconexion / 1000}s...`);
-  clearTimeout(reconexionTimer);
-  reconexionTimer = setTimeout(() => {
-    reconectando   = false;
-    reconexionTimer = null;
-    iniciarBot();
-  }, delaReconexion);
-  delaReconexion = Math.min(delaReconexion * 2, MAX_DELAY);
-}
-
-// Estado de vinculación: GET /api/whatsapp/estado?token=ADMIN_TOKEN
-app.get('/api/whatsapp/estado', (req, res) => {
-  if (process.env.ADMIN_TOKEN && req.query.token !== process.env.ADMIN_TOKEN) {
-    return res.status(403).json({ ok: false, mensaje: 'No autorizado.' });
-  }
-  res.json({ ok: true, conectado: waConectado, codigo: codigoVinculacion });
-});
-
- async function iniciarBot() {
-   if (botIniciado) return;
-   botIniciado = true;
+async function iniciarBot() {
   try {
-    const { state, saveCreds } = await useMongoAuthState();
+    const { state, saveCreds } = await useMultiFileAuthState('auth_baileys');
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
@@ -309,63 +163,21 @@ app.get('/api/whatsapp/estado', (req, res) => {
       auth: state,
       logger: pino({ level: 'silent' }),
       printQRInTerminal: false,
-      browser: Browsers.ubuntu('Chrome'),
+      browser: ['Bot SST', 'Chrome', '1.0.0'],
     });
 
-    sockActivo = sock;
     sock.ev.on('creds.update', saveCreds);
 
-    // Vincular por número en vez de QR
-    if (!sock.authState.creds.registered && !codigoSolicitado) {
-      codigoSolicitado = true;
-      const numeroEnv = process.env.WA_PHONE_NUMBER;
-
-      const pedirCodigo = async (numero) => {
-        await new Promise(r => setTimeout(r, 8000));
-        try {
-          const code = await sock.requestPairingCode(numero.trim());
-          codigoVinculacion = code;
-          console.log(`\n🔑 Tu código: ${code}`);
-          console.log('WhatsApp → Dispositivos vinculados → Vincular con número\n');
-        } catch (e) {
-          console.error('Error al pedir código:', e.message, e.stack);
-          codigoSolicitado = false;
-        }
-      };
-
-      if (numeroEnv) {
-        // Producción (Render): número configurado por variable de entorno, sin consola interactiva
-        setTimeout(() => pedirCodigo(numeroEnv), 10000);
-      } else {
-        // Desarrollo local: pedir el número por consola
-        const readline = require('readline');
-        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-        rl.question('📱 Ingresa tu número (ej: 51987654321): ', async (numero) => {
-          rl.close();
-          await pedirCodigo(numero);
-        });
+    sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
+      if (qr) {
+        console.log('\n📱 Escanea este QR con tu WhatsApp:\n');
+        qrcode.generate(qr, { small: true });
       }
-    }
-
-    sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
       if (connection === 'close') {
-        waConectado = false;
         const code = lastDisconnect?.error?.output?.statusCode;
-        if (code !== DisconnectReason.loggedOut) {
-          programarReconexion();
-        } else {
-          // sesión cerrada intencionalmente — no reconectar
-          botIniciado = false;
-          sockActivo  = null;
-          codigoSolicitado  = false;
-          codigoVinculacion = null;
-        }
+        if (code !== DisconnectReason.loggedOut) iniciarBot();
       }
       if (connection === 'open') {
-        delaReconexion    = 5000; // reset backoff al conectar con éxito
-        codigoSolicitado  = false;
-        codigoVinculacion = null;
-        waConectado = true;
         console.log('✅ Bot WhatsApp conectado!');
       }
     });
@@ -373,74 +185,22 @@ app.get('/api/whatsapp/estado', (req, res) => {
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
       if (type !== 'notify') return;
       const msg = messages[0];
-      const msgId = msg.key.id;
-      if (procesados.has(msgId)) return;
-      procesados.add(msgId);
-      setTimeout(() => procesados.delete(msgId), 30000);
       if (!msg?.message || msg.key.fromMe) return;
 
       const texto  = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim().toLowerCase();
       const from   = msg.key.remoteJid;
-      const esGrupo = from.endsWith('@g.us');
       const waId   = msg.key.participant || from;
       const nombre = msg.pushName || 'Trabajador';
 
-      const reply = async (text) => {
-        if (esGrupo) {
-          await sock.sendMessage(from, { text: `@${waId.split('@')[0]} ${text}`, mentions: [waId] }, { quoted: msg });
-        } else {
-          await sock.sendMessage(from, { text }, { quoted: msg });
-        }
-      };
-
-      // Manejo de foto en paso 6
-      if (sesiones[waId] && sesiones[waId].paso === 6) {
-        const sesion = sesiones[waId];
-
-        // Si envía imagen
-        if (msg.message.imageMessage) {
-          try {
-            await reply('📤 Subiendo foto...');
-           const buffer = await downloadMediaMessage(msg, 'buffer', {});
-            const result = await cloudinary.uploader.upload(
-              `data:image/jpeg;base64,${buffer.toString('base64')}`,
-              { folder: 'sst_incidentes' }
-            );
-            sesion.data.fotoUrl = result.secure_url;
-          } catch (err) {
-              console.error('❌ Error Cloudinary:', err.message);
-              sesion.data.fotoUrl = null;
-          }
-        } else {
-          // Si escribe "sin foto"
-          sesion.data.fotoUrl = null;
-        }
-
-        try {
-          const numeroRegistro = await siguienteNumero();
-          await Incidente.create({ ...sesion.data, numeroRegistro });
-          delete sesiones[waId];
-          await reply(
-            `✅ *Incidente registrado*\n\n` +
-            `📌 *${sesion.data.titulo}*\n` +
-            `Tipo: ${sesion.data.tipo}\n` +
-            `Severidad: ${sesion.data.severidad}\n` +
-            `Área: ${sesion.data.area}\n` +
-            (sesion.data.fotoUrl ? `📸 Foto adjunta\n` : '') +
-            `\n🌐 https://proyecto-sst-i8zu.onrender.com`
-          );
-        } catch {
-          await reply('❌ Error al guardar. Intenta con *!reporte*');
-          delete sesiones[waId];
-        }
-        return;
-      }
-
       if (!texto) return;
+
+      const reply = async (text) => {
+        await sock.sendMessage(from, { text }, { quoted: msg });
+      };
 
       if (texto === '!ayuda' || texto === '!help') {
         await reply(
-          `🦺 *IDE - Mantenimiento Envasado*\n\n` +
+          `🦺 *Sistema SST — I.D.E. Refinería*\n\n` +
           `📋 *Comandos:*\n\n` +
           `*!reporte* — Registrar incidente\n` +
           `*!misreportes* — Ver mis reportes\n` +
@@ -458,8 +218,10 @@ app.get('/api/whatsapp/estado', (req, res) => {
           const altos    = await Incidente.countDocuments({ severidad: 'alta' });
           const medios   = await Incidente.countDocuments({ severidad: 'media' });
           const bajos    = await Incidente.countDocuments({ severidad: 'baja' });
-          await reply(`📊 *Estadísticas SST*\n\nTotal: *${total}*\n🔴 Críticos: *${criticos}*\n🟠 Altos: *${altos}*\n🟡 Medios: *${medios}*\n🟢 Bajos: *${bajos}*\n\n🌐 https://proyecto-sst-i8zu.onrender.com`);
-        } catch { await reply('❌ Error.'); }
+          await reply(
+            `📊 *Estadísticas SST*\n\nTotal: *${total}*\n🔴 Críticos: *${criticos}*\n🟠 Altos: *${altos}*\n🟡 Medios: *${medios}*\n🟢 Bajos: *${bajos}*\n\n🌐 https://proyecto-sst-i8zu.onrender.com`
+          );
+        } catch { await reply('❌ Error al obtener estadísticas.'); }
         return;
       }
 
@@ -474,13 +236,13 @@ app.get('/api/whatsapp/estado', (req, res) => {
             r += `*${i+1}. ${rep.titulo}*\n${rep.tipo} | ${rep.severidad}\n${rep.area}\n${f.getDate()} ${meses[f.getMonth()]} ${f.getFullYear()}\n\n`;
           });
           await reply(r);
-        } catch { await reply('❌ Error.'); }
+        } catch { await reply('❌ Error al obtener reportes.'); }
         return;
       }
 
       if (texto === '!reporte') {
         sesiones[waId] = { paso: 1, data: { usuarioNombre: nombre, usuarioWa: waId } };
-        await reply(`⚠️ *Nuevo Reporte SST*\n\n*Paso 1/6* — Título del incidente:\n\n_Ej: Derrame de aceite en caldera 2_`);
+        await reply(`⚠️ *Nuevo Reporte SST*\n\n*Paso 1/5* — Título del incidente:\n\n_Ej: Derrame de aceite en caldera 2_`);
         return;
       }
 
@@ -488,19 +250,26 @@ app.get('/api/whatsapp/estado', (req, res) => {
         const s   = sesiones[waId];
         const raw = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
 
-        if (s.paso === 1) { s.data.titulo = raw; s.paso = 2; await reply(`*Paso 2/6* — Tipo:\n\n1️⃣ Accidente\n2️⃣ Casi accidente\n3️⃣ Condición insegura\n4️⃣ Otro`); return; }
-        if (s.paso === 2) { s.data.tipo = {'1':'accidente','2':'casi-accidente','3':'condicion-insegura','4':'otro'}[texto]||'otro'; s.paso = 3; await reply(`*Paso 3/6* — Severidad:\n\n1️⃣ Baja\n2️⃣ Media\n3️⃣ Alta\n4️⃣ Crítica`); return; }
-        if (s.paso === 3) { s.data.severidad = {'1':'baja','2':'media','3':'alta','4':'critica'}[texto]||'media'; s.paso = 4; await reply(`*Paso 4/6* — Área:`); return; }
-        if (s.paso === 4) { s.data.area = raw; s.paso = 5; await reply(`*Paso 5/6* — Descripción:`); return; }
-        if (s.paso === 5) { s.data.descripcion = raw; s.paso = 6; await reply(`*Paso 6/6* — 📸 Envía una foto del incidente\n\n_O escribe "sin foto" para omitir_`); return; }
+        if (s.paso === 1) { s.data.titulo = raw; s.paso = 2; await reply(`*Paso 2/5* — Tipo:\n\n1️⃣ Accidente\n2️⃣ Casi accidente\n3️⃣ Condición insegura\n4️⃣ Otro`); return; }
+        if (s.paso === 2) { s.data.tipo = {'1':'accidente','2':'casi-accidente','3':'condicion-insegura','4':'otro'}[texto]||'otro'; s.paso = 3; await reply(`*Paso 3/5* — Severidad:\n\n1️⃣ Baja\n2️⃣ Media\n3️⃣ Alta\n4️⃣ Crítica`); return; }
+        if (s.paso === 3) { s.data.severidad = {'1':'baja','2':'media','3':'alta','4':'critica'}[texto]||'media'; s.paso = 4; await reply(`*Paso 4/5* — Área donde ocurrió:`); return; }
+        if (s.paso === 4) { s.data.area = raw; s.paso = 5; await reply(`*Paso 5/5* — Descripción:`); return; }
+        if (s.paso === 5) {
+          s.data.descripcion = raw;
+          try {
+            await Incidente.create(s.data);
+            delete sesiones[waId];
+            await reply(`✅ *Incidente registrado*\n\n📌 *${s.data.titulo}*\nTipo: ${s.data.tipo}\nSeveridad: ${s.data.severidad}\nÁrea: ${s.data.area}\n\n🌐 https://proyecto-sst-i8zu.onrender.com`);
+          } catch { await reply('❌ Error. Intenta con *!reporte*'); delete sesiones[waId]; }
+          return;
+        }
       }
 
       if (texto.startsWith('!')) await reply(`❓ Comando no reconocido.\n\nEscribe *!ayuda* para ver los comandos.`);
     });
 
   } catch (err) {
-    console.error('Error bot:', err.message);
-    botIniciado = false;
-    programarReconexion();
+    console.error('Error bot WhatsApp:', err.message);
+    setTimeout(iniciarBot, 5000);
   }
 }
