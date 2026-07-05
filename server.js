@@ -1,10 +1,10 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const express  = require('express');
 const mongoose = require('mongoose');
 const bcrypt   = require('bcryptjs');
 const path     = require('path');
 
-// â”€â”€ WhatsApp Baileys â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── WhatsApp Baileys ─────────────────────────────────────────
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const pino   = require('pino');
 const qrcode = require('qrcode-terminal');
@@ -15,15 +15,15 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// â”€â”€ MongoDB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── MongoDB ──────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('âœ… Conectado a MongoDB Atlas');
-    iniciarBot(); // Inicia el bot cuando MongoDB estÃ© listo
+    console.log('✅ Conectado a MongoDB Atlas');
+    iniciarBot(); // Inicia el bot cuando MongoDB esté listo
   })
-  .catch(err => console.error('âŒ Error MongoDB:', err.message));
+  .catch(err => console.error('❌ Error MongoDB:', err.message));
 
-// â”€â”€ Modelos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Modelos ──────────────────────────────────────────────────
 const usuarioSchema = new mongoose.Schema({
   nombre:     { type: String, required: true },
   correo:     { type: String, required: true, unique: true, lowercase: true },
@@ -46,7 +46,7 @@ const incidenteSchema = new mongoose.Schema({
 });
 const Incidente = mongoose.model('Incidente', incidenteSchema);
 
-// â”€â”€ RUTAS API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── RUTAS API ────────────────────────────────────────────────
 app.post('/api/registro', async (req, res) => {
   try {
     const { nombre, correo, contrasena } = req.body;
@@ -147,15 +147,15 @@ app.get('/api/estadisticas', async (req, res) => {
   }
 });
 
-// â”€â”€ Servidor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-app.listen(PORT, () => console.log('ðŸš€ Servidor SST en http://localhost:' + PORT));
+// ── Servidor ─────────────────────────────────────────────────
+app.listen(PORT, () => console.log('🚀 Servidor SST en http://localhost:' + PORT));
 
-// â”€â”€ BOT WHATSAPP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── BOT WHATSAPP ─────────────────────────────────────────────
 const sesiones = {};
 
 async function iniciarBot() {
   try {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_bot_nuevo');
+    const { state, saveCreds } = await useMultiFileAuthState('auth_baileys');
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
@@ -170,7 +170,7 @@ async function iniciarBot() {
 
     sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
       if (qr) {
-        console.log('\nðŸ“± Escanea este QR con tu WhatsApp:\n');
+        console.log('\n📱 Escanea este QR con tu WhatsApp:\n');
         qrcode.generate(qr, { small: true });
       }
       if (connection === 'close') {
@@ -178,7 +178,7 @@ async function iniciarBot() {
         if (code !== DisconnectReason.loggedOut) iniciarBot();
       }
       if (connection === 'open') {
-        console.log('âœ… Bot WhatsApp conectado!');
+        console.log('✅ Bot WhatsApp conectado!');
       }
     });
 
@@ -200,13 +200,13 @@ async function iniciarBot() {
 
       if (texto === '!ayuda' || texto === '!help') {
         await reply(
-          `ðŸ¦º *Sistema SST â€” I.D.E. RefinerÃ­a*\n\n` +
-          `ðŸ“‹ *Comandos:*\n\n` +
-          `*!reporte* â€” Registrar incidente\n` +
-          `*!misreportes* â€” Ver mis reportes\n` +
-          `*!stats* â€” EstadÃ­sticas\n` +
-          `*!ayuda* â€” Esta lista\n\n` +
-          `ðŸŒ https://proyecto-sst-i8zu.onrender.com`
+          `🦺 *Sistema SST — I.D.E. Refinería*\n\n` +
+          `📋 *Comandos:*\n\n` +
+          `*!reporte* — Registrar incidente\n` +
+          `*!misreportes* — Ver mis reportes\n` +
+          `*!stats* — Estadísticas\n` +
+          `*!ayuda* — Esta lista\n\n` +
+          `🌐 https://proyecto-sst-i8zu.onrender.com`
         );
         return;
       }
@@ -219,30 +219,30 @@ async function iniciarBot() {
           const medios   = await Incidente.countDocuments({ severidad: 'media' });
           const bajos    = await Incidente.countDocuments({ severidad: 'baja' });
           await reply(
-            `ðŸ“Š *EstadÃ­sticas SST*\n\nTotal: *${total}*\nðŸ”´ CrÃ­ticos: *${criticos}*\nðŸŸ  Altos: *${altos}*\nðŸŸ¡ Medios: *${medios}*\nðŸŸ¢ Bajos: *${bajos}*\n\nðŸŒ https://proyecto-sst-i8zu.onrender.com`
+            `📊 *Estadísticas SST*\n\nTotal: *${total}*\n🔴 Críticos: *${criticos}*\n🟠 Altos: *${altos}*\n🟡 Medios: *${medios}*\n🟢 Bajos: *${bajos}*\n\n🌐 https://proyecto-sst-i8zu.onrender.com`
           );
-        } catch { await reply('âŒ Error al obtener estadÃ­sticas.'); }
+        } catch { await reply('❌ Error al obtener estadísticas.'); }
         return;
       }
 
       if (texto === '!misreportes') {
         try {
           const reportes = await Incidente.find({ usuarioWa: waId }).sort({ fecha: -1 }).limit(5);
-          if (!reportes.length) { await reply(`ðŸ“‹ No tienes reportes.\n\nUsa *!reporte* para crear uno.`); return; }
+          if (!reportes.length) { await reply(`📋 No tienes reportes.\n\nUsa *!reporte* para crear uno.`); return; }
           const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-          let r = `ðŸ“‹ *Tus reportes:*\n\n`;
+          let r = `📋 *Tus reportes:*\n\n`;
           reportes.forEach((rep, i) => {
             const f = new Date(rep.fecha);
             r += `*${i+1}. ${rep.titulo}*\n${rep.tipo} | ${rep.severidad}\n${rep.area}\n${f.getDate()} ${meses[f.getMonth()]} ${f.getFullYear()}\n\n`;
           });
           await reply(r);
-        } catch { await reply('âŒ Error al obtener reportes.'); }
+        } catch { await reply('❌ Error al obtener reportes.'); }
         return;
       }
 
       if (texto === '!reporte') {
         sesiones[waId] = { paso: 1, data: { usuarioNombre: nombre, usuarioWa: waId } };
-        await reply(`âš ï¸ *Nuevo Reporte SST*\n\n*Paso 1/5* â€” TÃ­tulo del incidente:\n\n_Ej: Derrame de aceite en caldera 2_`);
+        await reply(`⚠️ *Nuevo Reporte SST*\n\n*Paso 1/5* — Título del incidente:\n\n_Ej: Derrame de aceite en caldera 2_`);
         return;
       }
 
@@ -250,22 +250,22 @@ async function iniciarBot() {
         const s   = sesiones[waId];
         const raw = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
 
-        if (s.paso === 1) { s.data.titulo = raw; s.paso = 2; await reply(`*Paso 2/5* â€” Tipo:\n\n1ï¸âƒ£ Accidente\n2ï¸âƒ£ Casi accidente\n3ï¸âƒ£ CondiciÃ³n insegura\n4ï¸âƒ£ Otro`); return; }
-        if (s.paso === 2) { s.data.tipo = {'1':'accidente','2':'casi-accidente','3':'condicion-insegura','4':'otro'}[texto]||'otro'; s.paso = 3; await reply(`*Paso 3/5* â€” Severidad:\n\n1ï¸âƒ£ Baja\n2ï¸âƒ£ Media\n3ï¸âƒ£ Alta\n4ï¸âƒ£ CrÃ­tica`); return; }
-        if (s.paso === 3) { s.data.severidad = {'1':'baja','2':'media','3':'alta','4':'critica'}[texto]||'media'; s.paso = 4; await reply(`*Paso 4/5* â€” Ãrea donde ocurriÃ³:`); return; }
-        if (s.paso === 4) { s.data.area = raw; s.paso = 5; await reply(`*Paso 5/5* â€” DescripciÃ³n:`); return; }
+        if (s.paso === 1) { s.data.titulo = raw; s.paso = 2; await reply(`*Paso 2/5* — Tipo:\n\n1️⃣ Accidente\n2️⃣ Casi accidente\n3️⃣ Condición insegura\n4️⃣ Otro`); return; }
+        if (s.paso === 2) { s.data.tipo = {'1':'accidente','2':'casi-accidente','3':'condicion-insegura','4':'otro'}[texto]||'otro'; s.paso = 3; await reply(`*Paso 3/5* — Severidad:\n\n1️⃣ Baja\n2️⃣ Media\n3️⃣ Alta\n4️⃣ Crítica`); return; }
+        if (s.paso === 3) { s.data.severidad = {'1':'baja','2':'media','3':'alta','4':'critica'}[texto]||'media'; s.paso = 4; await reply(`*Paso 4/5* — Área donde ocurrió:`); return; }
+        if (s.paso === 4) { s.data.area = raw; s.paso = 5; await reply(`*Paso 5/5* — Descripción:`); return; }
         if (s.paso === 5) {
           s.data.descripcion = raw;
           try {
             await Incidente.create(s.data);
             delete sesiones[waId];
-            await reply(`âœ… *Incidente registrado*\n\nðŸ“Œ *${s.data.titulo}*\nTipo: ${s.data.tipo}\nSeveridad: ${s.data.severidad}\nÃrea: ${s.data.area}\n\nðŸŒ https://proyecto-sst-i8zu.onrender.com`);
-          } catch { await reply('âŒ Error. Intenta con *!reporte*'); delete sesiones[waId]; }
+            await reply(`✅ *Incidente registrado*\n\n📌 *${s.data.titulo}*\nTipo: ${s.data.tipo}\nSeveridad: ${s.data.severidad}\nÁrea: ${s.data.area}\n\n🌐 https://proyecto-sst-i8zu.onrender.com`);
+          } catch { await reply('❌ Error. Intenta con *!reporte*'); delete sesiones[waId]; }
           return;
         }
       }
 
-      if (texto.startsWith('!')) await reply(`â“ Comando no reconocido.\n\nEscribe *!ayuda* para ver los comandos.`);
+      if (texto.startsWith('!')) await reply(`❓ Comando no reconocido.\n\nEscribe *!ayuda* para ver los comandos.`);
     });
 
   } catch (err) {
@@ -273,5 +273,3 @@ async function iniciarBot() {
     setTimeout(iniciarBot, 5000);
   }
 }
-
-
