@@ -34,7 +34,7 @@ app.delete("/api/incidentes/:id", async (req, res) => { try { await Incidente.fi
 app.get("/api/admin/usuarios", async (req, res) => { try { const usuarios = await Usuario.find({}, "-contrasena").sort({ creado: -1 }); res.json({ ok: true, usuarios }); } catch (err) { res.status(500).json({ ok: false, mensaje: "Error del servidor." }); } });
 app.put("/api/admin/usuarios/:id/rol", async (req, res) => { try { const { rol } = req.body; await Usuario.findByIdAndUpdate(req.params.id, { rol }); res.json({ ok: true, mensaje: "Rol actualizado." }); } catch (err) { res.status(500).json({ ok: false, mensaje: "Error del servidor." }); } });
 app.get("/api/estadisticas", async (req, res) => { try { const total = await Incidente.countDocuments(); const porSeveridad = await Incidente.aggregate([{ $group: { _id: "$severidad", count: { $sum: 1 } } }]); const porTipo = await Incidente.aggregate([{ $group: { _id: "$tipo", count: { $sum: 1 } } }]); res.json({ ok: true, total, porSeveridad, porTipo }); } catch (err) { res.status(500).json({ ok: false, mensaje: "Error del servidor." }); } });
-
+if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 app.listen(PORT, () => console.log("Servidor SST en http://localhost:" + PORT));
 
 const sesiones = {};
