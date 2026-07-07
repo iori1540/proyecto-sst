@@ -65,7 +65,7 @@ async function iniciarBot() {
       const reply = async (text) => { await sock.sendMessage(from, { text }, { quoted: msg }); };
       if (sesiones[waId] && sesiones[waId].paso === 6) {
         const s = sesiones[waId];
-        if (msg.message.imageMessage) { try { await reply("Subiendo foto..."); const buffer = await sock.downloadMediaMessage(msg); const tmpPath = "uploads/tmp_" + Date.now() + ".jpg"; fs.writeFileSync(tmpPath, buffer); const result = await cloudinary.uploader.upload(tmpPath, { folder: "sst_incidentes" }); fs.unlinkSync(tmpPath); s.data.fotoUrl = result.secure_url; } catch { s.data.fotoUrl = null; } } else { s.data.fotoUrl = null; }
+        if (msg.message.imageMessage) { try { await reply("Subiendo foto..."); const buffer = await sock.downloadMediaMessage(msg); const tmpPath = "uploads/tmp_" + Date.now() + ".jpg"; fs.writeFileSync(tmpPath, buffer); const result = await cloudinary.uploader.upload(tmpPath, { folder: "sst_incidentes" }); fs.unlinkSync(tmpPath); s.data.fotoUrl = result.secure_url; } catch(err) { console.error("Error foto:", err.message); s.data.fotoUrl = null; } } else { s.data.fotoUrl = null; }
         try { await Incidente.create(s.data); delete sesiones[waId]; await reply("*Incidente registrado*\n\n*" + s.data.titulo + "*\nTipo: " + s.data.tipo + "\nSeveridad: " + s.data.severidad + "\nArea: " + s.data.area + "\n\nhttps://proyecto-sst-i8zu.onrender.com"); } catch(err) { console.error("Error guardando incidente:", err.message); await reply("Error. Intenta con !reporte"); delete sesiones[waId]; }
         return;
       }
