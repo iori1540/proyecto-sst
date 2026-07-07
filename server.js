@@ -57,6 +57,7 @@ async function iniciarBot() {
       if (type !== "notify") return;
       const msg = messages[0];
       if (!msg?.message || msg.key.fromMe) return;
+      const esGrupo = msg.key.remoteJid.endsWith('@g.us');
       const texto = (msg.message.conversation || msg.message.extendedTextMessage?.text || "").trim().toLowerCase();
       const from = msg.key.remoteJid;
       const waId = msg.key.participant || from;
